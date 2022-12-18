@@ -88,6 +88,9 @@ void EEPROM_TickerConfig_Start (bool flush = false) // function assume EEPROM.be
     strcpy(newConfig.crypto_1,  DEFAULT_TICKER_1 );   
     strcpy(newConfig.crypto_2,  DEFAULT_TICKER_2 );       
     strcpy(newConfig.crypto_3,  DEFAULT_TICKER_3 );  
+
+    strcpy(newConfig.stock_1,   DEFAULT_STONK_1 );      
+
     strcpy(newConfig.news_codes,  DEFAULT_NEWS_CODES ); 
     newConfig.news_limit = DEFAULT_NEWS_LIMIT;
 

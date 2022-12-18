@@ -70,6 +70,9 @@ void waitForZoneAnimationComplete()
           yield(); // keep the watchdog fed. Removed: NOT relevant to ESP32
 #endif   
     }
+
+    // Just to be sure all zones are completed. 
+    Parola.displayAnimate();      Parola.displayAnimate();     Parola.displayAnimate();
  
 
 }

@@ -380,7 +380,7 @@ void setup()
   show_starting_greeting();
 
   Parola.displayClear();
-  sprintf_P(parolaBuffer, "Access this device on your local network by going to: http://%d.%d.%d.%d", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3]);
+  sprintf_P(parolaBuffer, "Access this device on your local network by going to   http://%d.%d.%d.%d", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3]);
   printTextOrScrollLeft(parolaBuffer, false, 25);  
   printTextOrScrollLeft("Loading...");
 
@@ -529,9 +529,9 @@ void loop()
       // Change the intensity, but only every thirty seconds or so, and if the moving average permits.
       if ((unsigned long)(current_millisecond - last_brightness_change_millisecond) > (30 * 1000) ) { // don't keep flip flopping
         if (tickerConfig.matrix_brightness_mode == BRIGHTNESS_MODE_ADAPTIVE) {
-            if (adc_maverage < 900) {  Parola.setIntensity(0); } 
-            else if (adc_maverage > 1000) { Parola.setIntensity(12); }
-            else { Parola.setIntensity(6); }
+            if (adc_maverage < 800) {  Parola.setIntensity(0); } 
+            else if (adc_maverage > 1000) { Parola.setIntensity(10); }
+            else { Parola.setIntensity(1); }
                  
           last_brightness_change_millisecond = current_millisecond;
         } // we are using adaptive brightness

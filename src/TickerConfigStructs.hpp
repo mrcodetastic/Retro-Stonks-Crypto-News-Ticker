@@ -41,8 +41,9 @@
 #define DEFAULT_TICKER_1 "BTC"
 #define DEFAULT_TICKER_2 "ETH"
 #define DEFAULT_TICKER_3 "LTC"
-#define DEFAULT_TICKER_4 "BCH"
-#define DEFAULT_TICKER_5 "EOS"
+
+// Random stonk
+#define DEFAULT_STONK_1 "ASX:LKE"
 
 // Default News - Sky World and Coin Desk - confirm this in the index.php file for the IoT Proxy Script
 #define DEFAULT_NEWS_CODES "BT" 

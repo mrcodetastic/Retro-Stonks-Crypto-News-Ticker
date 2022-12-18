@@ -22,7 +22,7 @@ On first boot it will ask you to connect to the WiFi AP it creates, to configure
 ## Hardware Required
 
 * [ESP8266](https://www.aliexpress.com/item/32651747570.html) (any ESP device should work, but I haven't tested)
-* 8 x MAXX7219 modules (they're 8x8 LEDs in each module), chained. For example, buy [two of these](https://www.aliexpress.com/item/4001131640516.html) and chain them.
+* [2 x 4xMAXX7219 modules](https://www.aliexpress.com/item/4001131640516.html) (i.e. two chains of 4 x 8x8 LEDs in each module). Red, Green and Blue are the colours available. I prefer red as it better matches my stonks and/or crypto portfolio growth (loss).
 * Optional: LDR and 1kohm resistor (if you want to have the brightness of LEDs adjust automatically, like your mobile phone display)
 
 ## In action

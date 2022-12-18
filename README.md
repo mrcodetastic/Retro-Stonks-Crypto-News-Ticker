@@ -21,9 +21,9 @@ On first boot it will ask you to connect to the WiFi AP it creates, to configure
 
 ## Hardware Required
 
-* ESP8266 (any ESP device should work, but I haven't tested)
+* [ESP8266](https://www.aliexpress.com/item/32651747570.html) (any ESP device should work, but I haven't tested)
 * 8 x MAXX7219 modules (they're 8x8 LEDs in each module), chained. For example, buy [two of these](https://www.aliexpress.com/item/4001131640516.html) and chain them.
-* LDR and 1kohm resistor
+* Optional: LDR and 1kohm resistor (if you want to have the brightness of LEDs adjust automatically, like your mobile phone display)
 
 ## In action
 ![Config Interface](media/front_1.jpg)

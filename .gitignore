@@ -1,6 +1,5 @@
 .pio/
 .vscode/
-lib/
 test/
 *.lnk
 www-scripts/

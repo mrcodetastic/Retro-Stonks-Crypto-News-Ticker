@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+										
+	
+	<!-- Bootstrap 4.1.1 Reset CSS -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" crossorigin="anonymous">
+	
+	<!-- Bootstrap 4.1.1 Reset CSS on device as backup -->
+	<link rel="stylesheet" href="bootstrap.min.css" crossorigin="anonymous">
+
+	
+	<!-- Jquery 3.3.1 -->
+	<script src="jquery-3.3.1.min.js"></script>
+	
+    <!-- Custom CSS -->
+	<style>
+
+
+		.bd-example { padding: 1em; }
+		
+		h4, .top-nav  
+		{ 
+			background-color: #2874A6; 
+			color: #fff;
+				
+			border-width: 2px;
+			border-radius: .3rem;
+			
+			padding-left: 1em;
+			padding-top: .3em;
+			padding-right: .3em;
+			padding-bottom: .3em;
+			
+			/*
+			box-shadow: inset 0 0 2px 1px rgba(255,255,255,0.05), 
+			0px 15px 10px -8px rgba(0, 0, 0, 0.6);
+			*/
+		}
+		
+		.top-nav { margin-bottom: 1em; }
+		
+		.top-buffer { margin-top:5px; }
+		
+		.nav-link.active { color: #fff; }
+		
+		.nav-link { color: #ccc; }
+		
+		.nav-link:hover { color: #fff; }
+		
+		  label { font-weight: 600; }
+		
+	
+		
+	</style>
+
+	<title>RetroTicker Set Message</title>
+  </head>
+  <body>
+
+  
+	<div class="bd-example">		
+	
+
+	<ul class="nav top-nav" id="top-nav">
+	  <li class="navbar-brand">RetroTicker</li>
+	  <li class="nav-item">
+		<a class="nav-link" href="./">Main Menu</a>
+	  </li>
+	  <!--	  
+	  <li class="nav-item">
+		<a class="nav-link " href="./login">Config</a>
+	  </li>
+
+	  <li class="nav-item">
+		<a class="nav-link" href="./reset">Reset</a>
+	  </li>
+	  -->
+	</ul>
+	
+
+
+	<form class="needs-validation" id="config_form" action="./message_submit" method="post" novalidate>
+	
+	 <!-- Name -->
+	  <div class="form-group">		
+			<span class="form-text text-muted">Enter the message to display on the ticker. Message must be comprised of alphanumeric characters only (i.e. 0-9, a-z etc.)</span>
+			<textarea class="form-control top-buffer" rows="3" id="input_message" name="input_message" placeholder="Have a great day John!"></textarea>
+			<small>Maximum of 250 characters.</small> <small class="form-text text-muted">Submitting a blank message will cancel / clear a previous message.</small>
+	  </div>
+
+	<div class="form-group">
+			<label for="input_custom_message_display_freq">Display Frequency</label>
+			<select class="form-control" id="input_custom_message_display_freq" name="input_custom_message_display_freq">		
+				<option value="0">Show only once</option>
+				<option value="1">Repeatedly (show nothing else!)</option>
+				<option value="10">Every 10 seconds</option>
+				<option value="30">Every 30 seconds</option>				
+				<option value="60">Every minute</option>	
+				<option value="300">Every 5 minutes</option>		
+				<option value="600">Every 10 minutes</option>				
+				<option value="1800">Every 30 minutes</option>												
+				<option value="3600">Every hour</option>																
+																				
+			</select>
+				<small style="padding-bottom: 10px;" class="form-text text-muted">The frequency the custom message is displayed. </small>
+	</div>
+	
+
+	<div class="form-group">
+			<label for="input_custom_message_expiry">Expire After</label>
+			<select class="form-control" id="input_custom_message_expiry" name="input_custom_message_expiry">		
+				<option value="60">1 minute</option>	
+				<option value="300">5 minutes</option>		
+				<option value="600">10 minutes</option>				
+				<option value="1800">30 minutes</option>												
+				<option value="3600">An hour</option>																
+				<option value="90000">An day</option>	
+				<option value="0">Never</option>						
+																				
+			</select>
+				<small style="padding-bottom: 10px;" class="form-text text-muted">How long you want this custom message to be displayed. </small>
+	</div>	
+
+		  
+	  
+		
+		<div class="alert alert-danger" style="display:none;" id="validation_error">
+		  <strong>Error! </strong>Please provide a valid message.
+		</div>
+
+	   <input type="hidden" name="message_submit" value="yep" />
+	   <button class="btn btn-primary" type="submit">Set Message</button>
+	</form>
+	
+	<!-- Success Message -->
+	<div id="ajax_message" style="margin-top:10px;"></div>
+	
+
+	<script>
+	
+	// Example starter JavaScript for disabling form submissions if there are invalid fields
+	(function() {
+	  'use strict';
+	  window.addEventListener('load', function() 
+	  {
+	  
+		// Fetch all the forms we want to apply custom Bootstrap validation styles to
+		var forms = document.getElementsByClassName('needs-validation');
+		
+		// Loop over them and prevent submission
+		var validation = Array.prototype.filter.call(forms, function(form) {
+		  form.addEventListener('submit', function(event) {
+		  
+		  var legnth = $('#input_message').val().length;
+		  console.log("Length of submitted is: " + legnth);
+		  
+		  
+			if (form.checkValidity() === false || !isprintableASCII($('#input_message').val()) ) { // || legnth < 3) {
+			
+				var element2 = document.getElementById("validation_error");
+				element2.style.display = "block" ;	
+			
+			  event.preventDefault();
+			  event.stopPropagation();
+			  
+			}
+			else
+			{
+				// Only submit if we're verified locally it's OK
+				do_ajax_submit();
+			}
+			
+			form.classList.add('was-validated');
+			
+		  }, false);
+		});
+	  }, false);
+	})();
+	</script>
+	
+	<script>
+	
+	function toggle_input_custom_message_expiry()
+	{
+			// if we're only showing a message once, the expiry dropdown
+			// for a message is irrelevant.
+			if ( $("#input_custom_message_display_freq").val() == 0 ) 
+			{				
+				      $("#input_custom_message_expiry").prop("disabled", true);
+			} else {  
+					  $("#input_custom_message_expiry").prop("disabled", false); 
+			}	
+	
+	}
+	
+	
+	// Some inter-dropdown interactions
+	// only perform this if we're all loaded etc.
+	$(document).ready(function() {
+	
+		$("#input_custom_message_display_freq").change( function(event) {
+		
+			toggle_input_custom_message_expiry();
+		
+		});
+		
+			toggle_input_custom_message_expiry();
+	
+	});
+	
+	
+	// Set message script
+	// https://github.com/scotch-io/ajax-forms-jquery
+	/*
+	$(document).ready(function() {
+
+		// process the form
+		$('form').submit(function(event) {
+	*/
+	
+	function do_ajax_submit()
+	{
+	
+			// get the form data
+			// there are many ways to get this data using jQuery (you can use the class or id also)
+			var formData = {
+				'input_custom_message_display_freq' : $('#input_custom_message_display_freq').val(),
+				'input_custom_message_expiry' 		: $('#input_custom_message_expiry').val(),
+				'input_message' 					: $('#input_message').val(),
+				'ajax_baby'							: 1,
+				// https://stackoverflow.com/questions/901712/how-to-check-whether-a-checkbox-is-checked-in-jquery
+			};
+
+			// process the form
+			$.ajax({
+				type 		: 'POST', // define the type of HTTP verb we want to use (POST for our form)
+				url 		: '/message_submit', // the url where we want to POST
+				data 		: formData, // our data object
+				dataType 	: 'json', // what type of data do we expect back from the server
+				encode 		: true
+			})
+				// using the done promise callback
+				.done(function(data) {
+
+					// log data to the console so we can see
+					console.log(data); 
+
+					// here we will handle errors and validation messages
+					if ( ! data.success) {
+					
+						console.log("Failed to send message.");
+						
+					} else {
+
+						// ALL GOOD! just show the success message!
+						//$('form').append('<div class="alert alert-success">Message Updated</div>');
+						$('#ajax_message').html('<div class="alert alert-success">Message Updated</div>');
+						
+						console.log ("Message changed successfully");
+
+						// usually after form submission, you'll want to redirect
+						// window.location = '/thank-you'; // redirect a user to another page
+					}
+				})
+
+				// using the fail promise callback
+				.fail(function(data) {
+
+					// show any errors
+					// best to remove for production
+					console.log(data);
+				});
+
+			// stop the form from submitting the normal way and refreshing the page
+			event.preventDefault();
+		}
+			
+			/*
+		});
+
+	});
+	*/
+	</script>		
+
+	<script>
+	var max = 250;
+
+	function isprintableASCII(str) 
+	{
+		return (/^[\x20-\x7E\r\n]*$/i).test(str);
+	}
+
+	$('#input_message').bind('input propertychange', function(e)
+	{
+		var text_val        = $(this).val();
+		
+		if (  isprintableASCII(   text_val ) == false)
+		{
+			console.log('Not valid ASCII');
+			text_val = text_val.replace(/[^\x20-\x7E\r\n]/, ''); // Where it ISN't in the allowed list
+
+			console.log(text_val);
+
+		$(this).val(text_val);
+
+			// need to get this to work
+			$('#output').html("Sorry. An invalid character was entered.");
+		}
+
+		var strlen          = text_val.length;
+
+		console.log("Characters left: " + (max-strlen) )
+
+		$('#output').html("Characters left: " + (max-strlen));
+
+		if (strlen == max)
+		{
+			e.preventDefault();
+		} 
+		else if (strlen > max) 
+		{
+			// Maximum exceeded
+			this.value = this.value.substring(0, max-1);
+		}
+	});
+
+
+	</script>	
+
+
+	
+				
+				
+	<!-- end bd example -->
+	</div>
+
+
+  </body>
+</html>

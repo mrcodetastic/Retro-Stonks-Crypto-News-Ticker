@@ -1,0 +1,163 @@
+#ifndef CUSTOM_FASTLED
+#define CUSTOM_FASTLED
+
+/**********************************************************************************************
+ * Custom LED behaviour / lighting functions / effects.
+ */
+
+
+
+
+/*********************************** FAST LED STUFF ***********************************/
+// A color palette for the boot-up sequence.
+DEFINE_GRADIENT_PALETTE( Rainbow_gp2 ) 
+{
+      0,   0,   0,   0,   // Black  
+      60,  255,  0,  0,   // Red
+     110,  171, 85,  0,   // Orange
+     170,  171,171,  0,   // Yellow
+     200,    0,0,  255,   // Blue
+     255,   0,   0,   0   // Black  
+};// and back to Red
+
+// Pretty top boot colors
+void boot_transition_top_leds(uint8_t from_palette_index, uint8_t to_palette_index)
+{
+    // Transition the diffence in palette over 1500ms
+    uint8_t difference        = to_palette_index - from_palette_index;
+    unsigned int delay_ms     = 1200/difference;
+    
+    // transition over 1500ms, @ 30fps = 45 frames, each frame every 33 ms
+    CRGBPalette16 bootPalette = Rainbow_gp2;  // For booting only.    
+
+    for (uint8_t index = from_palette_index; index < to_palette_index; index++)
+    {
+      CRGB color = ColorFromPalette(bootPalette, index);  
+      fill_solid(leds, NUM_LEDS, color);
+      FastLED.show();      
+      delay(delay_ms);
+      //Sprintln("This index is: " + String(index));
+      
+    } 
+}
+
+
+// A color palette for the CRYPTO PORTFOLIO
+DEFINE_GRADIENT_PALETTE( RedToGreen_gp ) 
+{
+      0,    255,   0,    0,    // Red  
+     130,    0,     0,    0,   // Black
+     255,    0,   255,    0    // Green
+     
+}; // and back to Red
+
+
+// Pretty top boot colors
+void crypto_set_top_led_palette(uint8_t to_palette_index)
+{
+    CRGBPalette16 cryptoPalette = RedToGreen_gp;  // For booting only.    
+    
+    CRGB color = ColorFromPalette(cryptoPalette, to_palette_index);  
+    fill_solid(leds, NUM_LEDS, color);
+    FastLED.show();  
+}
+
+// nothing beats you're own min/max function...
+int return_no_greater_or_less_than(int limit, int value)
+{
+
+  if ( abs(value) > abs(limit) )
+  {
+    if (value > 0)
+    {
+      return abs(limit);
+    }
+    else
+    {
+      return -abs(limit);
+    }
+  }
+  else
+  {
+    return value;
+  }
+
+} // enr return limit check
+
+
+/******************************** TOP LED FUNCTIONS ***************************************/
+/*
+  void led_nextPattern()
+  {
+  // add one to the current pattern number, and wrap around at the end
+  gCurrentPatternNumber = (gCurrentPatternNumber + 1) % ARRAY_SIZE( gPatterns);
+  }
+*/
+
+void leds_black()
+{
+  // Set the leds
+  for ( int i = 0; i < NUM_LEDS; i++)
+  {
+    leds[i] = CRGB(0, 0, 0);
+  }
+
+}
+
+void leds_static(CRGB led_colour)
+{
+  for ( int i = 0; i < NUM_LEDS; i++)
+  {
+    //leds[i] = CRGB(leds_colour_r, leds_colour_g, leds_colour_b);
+    leds[i] = led_colour;
+  }
+}
+
+
+// Of use? https://gist.github.com/jasoncoon/d54216fc8ce2eb0ecee87f8002d421c5
+void glow_red_bpm()
+{
+  // colored stripes pulsing at a defined Beats-Per-Minute (BPM)
+  uint8_t BeatsPerMinute = 10;
+  uint8_t beat = beatsin8( BeatsPerMinute, 16, 255);
+  for ( int i = 0; i < NUM_LEDS; i++)
+  {
+    leds[i] = CRGB(beat, 0, 0);
+  }
+}
+
+void glow_green_bpm()
+{
+  // colored stripes pulsing at a defined Beats-Per-Minute (BPM)
+  uint8_t BeatsPerMinute = 10;
+  uint8_t beat = beatsin8( BeatsPerMinute, 16, 255);
+  for ( int i = 0; i < NUM_LEDS; i++)
+  {
+    leds[i] = CRGB(0, beat, 0);
+  }
+}
+
+
+void leds_juggle() {
+  // eight colored dots, weaving in and out of sync with each other
+  fadeToBlackBy( leds, NUM_LEDS, 20);
+  byte dothue = 0;
+  for ( int i = 0; i < 8; i++) {
+    leds[beatsin16( i + 7, 0, NUM_LEDS - 1 )] |= CHSV(dothue, 200, 255);
+    dothue += 32;
+  }
+}
+/*
+void leds_sinelon()
+{
+  // a colored dot sweeping back and forth, with fading trails
+  fadeToBlackBy( leds, NUM_LEDS, 20);
+  int pos = beatsin16( 13, 0, NUM_LEDS - 1 );
+  leds[pos] += CHSV( gHue, 255, 192);
+}
+*/
+
+
+
+
+#endif

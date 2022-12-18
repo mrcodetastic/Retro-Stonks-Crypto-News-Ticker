@@ -1,0 +1,8 @@
+.pio/
+.vscode/
+lib/
+test/
+*.lnk
+www-scripts/
+private/
+scripts/

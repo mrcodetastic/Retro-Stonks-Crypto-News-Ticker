@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+										
+	
+	<!-- Bootstrap 4.1.1 Reset CSS -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" crossorigin="anonymous">
+	
+	<!-- Bootstrap 4.1.1 Reset CSS on device as backup -->
+	<link rel="stylesheet" href="bootstrap.min.css" crossorigin="anonymous">
+
+	<!-- Jquery 3.3.1 -->
+	<script src="jquery-3.3.1.min.js"></script>
+		
+    <!-- Custom CSS -->
+	<style>
+		.bd-example { padding: 1em; }
+		
+		h4, .top-nav  
+		{ 
+			background-color: #2874A6; 
+			color: #fff;
+				
+			border-width: 2px;
+			border-radius: .3rem;
+			
+			padding-left: 1em;
+			padding-top: .3em;
+			padding-right: .3em;
+			padding-bottom: .3em;
+			
+			/*
+			box-shadow: inset 0 0 2px 1px rgba(255,255,255,0.05), 
+			0px 15px 10px -8px rgba(0, 0, 0, 0.6);
+			*/
+		}
+		
+		.top-nav { margin-bottom: 1em; }
+		
+		.top-buffer { margin-top:5px; }
+		
+		.nav-link.active { color: #fff; }
+		
+		.nav-link { color: #ccc; }
+		
+		.nav-link:hover { color: #fff; }
+		
+		
+	</style>	
+	<style>
+	
+		.color-input
+		{
+				background-color: #fefefe;
+				border-color: #000;
+				border-width: 2px;
+				border-radius: .3rem;
+				
+
+				font-weight: 400;
+				font-size: 1.5em;
+				
+				margin: .5em;
+				padding: .375rem .75rem;
+		
+				
+		}
+		
+		.color-button
+		{
+			margin: 10px;
+			width: 150px;
+			height: 50px;
+
+		}
+		
+	</style>
+	
+	<title>RetroTicker Color Change</title>
+	
+	
+	<script>
+	
+	var color_r = 0;
+	var color_g = 0;
+	var color_b = 0;
+	
+	function ajax_submit_color(color_reset)
+	{
+		
+		// Color Picker
+		$(document).ready(function() {
+
+		/*
+			// process the form
+			$('form').submit(function(event) {
+			*/
+
+				// get the form data
+				// there are many ways to get this data using jQuery (you can use the class or id also)
+				var formData = {
+					'color_r' 			: color_r,
+					'color_g' 			: color_g,
+					'color_b' 			: color_b,	
+					'reset'				: color_reset,
+					//'submit' 			: $('input[name=submit]').val(),				
+					///'usercolor' 		: $('input[name=usercolor]').val(),								
+					
+					
+					//'pulsate' 			: $('input[name=pulsate]').is(':checked'),
+					// https://stackoverflow.com/questions/901712/how-to-check-whether-a-checkbox-is-checked-in-jquery
+				};
+
+				// process the form
+				$.ajax({
+					type 		: 'POST', // define the type of HTTP verb we want to use (POST for our form)
+					url 		: '/color_submit', // the url where we want to POST
+					data 		: formData, // our data object
+					dataType 	: 'json', // what type of data do we expect back from the server
+					encode 		: true
+				})
+					// using the done promise callback
+					.done(function(data) {
+
+						// log data to the console so we can see
+						console.log(data); 
+
+						// here we will handle errors and validation messages
+						if ( ! data.success) {
+						
+							console.log("Failed to change color");
+							
+						} else {
+
+							// ALL GOOD! just show the success message!
+							// $('form').append('<div class="alert alert-success">' + data.message + '</div>');
+							
+							console.log ("Color changed successfully");
+
+							// usually after form submission, you'll want to redirect
+							// window.location = '/thank-you'; // redirect a user to another page
+						}
+					})
+
+					// using the fail promise callback
+					.fail(function(data) {
+
+						// show any errors
+						// best to remove for production
+						console.log(data);
+					});
+
+				// stop the form from submitting the normal way and refreshing the page
+				//event.preventDefault();
+		//	});
+
+		});
+		
+		return false;
+	}
+	</script>
+   </head>
+   
+ <body>
+
+  
+	<div class="bd-example">		
+	
+
+	<ul class="nav top-nav" id="top-nav">
+	  <li class="navbar-brand">RetroTicker</li>
+	  <li class="nav-item">
+		<a class="nav-link" href="./">Main Menu</a>
+	  </li>
+	  <!--	  
+	  <li class="nav-item">
+		<a class="nav-link " href="./login">Config</a>
+	  </li>
+
+	  <li class="nav-item">
+		<a class="nav-link" href="./reset">Reset</a>
+	  </li>
+	  -->
+	</ul>
+	
+   
+	<body style="text-align:center;">
+	
+	<form  id="color-form" action="./color_submit" method="post" novalidate>
+	
+	
+		<span class="form-text text-muted">Select a color you want the LEDs on the top of the device to produce.</span>
+
+	
+		<script src="jscolor.js"></script>
+		
+		<form action="show_data.html">
+		<p>
+			<input name="color2" type="hidden" id="color_value" value="FF0000">
+			<button class="color-button jscolor {onFineChange:'update(this)'}">Pick a color</button>
+		</p>
+		<!-- <p><input type="checkbox" name="pulsate" value="Y" /> Glow (Pulsate)</p> -->
+
+		 <button class="btn btn-primary" type="submit" onclick="ajax_submit_color(0); return false;">Change Color</button>
+		 
+		 <button class="btn btn-link" type="submit" onclick="ajax_submit_color('Y'); return false;">Reset</button>
+
+		</form>
+
+		<!-- end bd example -->
+		
+		<div style="display:none;">
+			toHEXString = <span id="hex-str"></span><br />
+			toRGBString = <span id="rgb-str"></span><br />
+			R, G, B = <span id="rgb"></span><br />
+			H, S, V = <span id="hsv"></span>
+		</div>
+	
+	</div>
+		
+			
+	<script>
+	// Perform this on change of color in the picker
+	function update(picker) 
+	{
+	
+		color_r = picker.rgb[0];
+		color_g = picker.rgb[1];
+		color_b = picker.rgb[2];
+
+		/*
+		document.getElementById('hex-str').innerHTML = picker.toHEXString();
+		document.getElementById('rgb-str').innerHTML = picker.toRGBString();
+
+		document.getElementById('rgb').innerHTML =
+			Math.round(picker.rgb[0]) + ', ' +
+			Math.round(picker.rgb[1]) + ', ' +
+			Math.round(picker.rgb[2]);
+
+		document.getElementById('hsv').innerHTML =
+			Math.round(picker.hsv[0]) + '&deg;, ' +
+			Math.round(picker.hsv[1]) + '%, ' +
+			Math.round(picker.hsv[2]) + '%';
+			*/
+	}
+	</script>
+			
+	</form>
+
+</body>
+</html>

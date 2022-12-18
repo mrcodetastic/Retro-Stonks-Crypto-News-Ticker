@@ -1,0 +1,27 @@
+13mm for screen
+27mm remaining
+
+34.2mm long for node mcu
+
+need an additional 7.2mm
+
+= 47.2mm
+(5 cm)
+
+
+Rectangular box, missing the front (electronics will slot into this to form a screen)
+Opel Perspex - 3mm thick.
+
+top and bottom =
+
+263mm wide (which is 257mm for inside area + 2x3mm for perspex with)
+50mm deep
+
+left and right sides (fits inbetween top and bottom pieces) = 
+32mm high 
+50mm deep
+
+back =
+
+263mm wide
+38mm high (32mm + 2x3mm for perspex with)

@@ -1,0 +1,984 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<!--
+
+		██╗  ██╗███████╗██╗     ██╗      ██████╗ ██╗
+		██║  ██║██╔════╝██║     ██║     ██╔═══██╗██║
+		███████║█████╗  ██║     ██║     ██║   ██║██║
+		██╔══██║██╔══╝  ██║     ██║     ██║   ██║╚═╝
+		██║  ██║███████╗███████╗███████╗╚██████╔╝██╗
+		╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝ ╚═════╝ ╚═╝
+													
+		Nice of you to want to view my source code... 
+									Don't be naughty.
+		
+	-->											
+	
+	<!-- Bootstrap 4.1.1 Reset CSS -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" crossorigin="anonymous">
+	
+	<!-- Bootstrap 4.1.1 Reset CSS on device as backup -->
+	<link rel="stylesheet" href="bootstrap.min.css" crossorigin="anonymous">
+
+	
+	<!-- Jquery 3.3.1 -->
+	<script src="./jquery-3.3.1.min.js"></script>		
+
+	<link id="favicon" rel="icon" type="image/x-icon" href="favicon.ico">
+		
+
+	<!-- Flat Picker -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+	<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+		
+	<!-- Loading Screen -->
+	<style>
+		
+		/*** Fancy CSS For Loading Screen ***/
+		.loader,
+		.loader:before,
+		.loader:after {
+		  background: #ffffff;
+		  -webkit-animation: load1 1s infinite ease-in-out;
+		  animation: load1 1s infinite ease-in-out;
+		  width: 1em;
+		  height: 4em;
+		}
+		.loader {
+		  color: #ffffff;
+		  text-indent: -9999em;
+		  margin: 88px auto;
+		  position: relative;
+		  font-size: 11px;
+		  -webkit-transform: translateZ(0);
+		  -ms-transform: translateZ(0);
+		  transform: translateZ(0);
+		  -webkit-animation-delay: -0.16s;
+		  animation-delay: -0.16s;
+		}
+		.loader:before,
+		.loader:after {
+		  position: absolute;
+		  top: 0;
+		  content: '';
+		}
+		.loader:before {
+		  left: -1.5em;
+		  -webkit-animation-delay: -0.32s;
+		  animation-delay: -0.32s;
+		}
+		.loader:after {
+		  left: 1.5em;
+		}
+		@-webkit-keyframes load1 {
+		  0%,
+		  80%,
+		  100% {
+			box-shadow: 0 0;
+			height: 4em;
+		  }
+		  40% {
+			box-shadow: 0 -2em;
+			height: 5em;
+		  }
+		}
+		@keyframes load1 {
+		  0%,
+		  80%,
+		  100% {
+			box-shadow: 0 0;
+			height: 4em;
+		  }
+		  40% {
+			box-shadow: 0 -2em;
+			height: 5em;
+		  }
+		}
+		.col-2 { padding: 2px;} /* override bootstrap 15px padding on columns */
+
+
+		/* Grey out until AJAX Loaded */
+		.dim
+		{
+					height:100%;
+					width:100%;
+					position:fixed;
+					left:0;
+					top:0;
+					bottom:-60px;
+					z-index:1 !important;
+					background-color:black;
+					
+					filter: alpha(opacity=75); /* internet explorer */
+					-khtml-opacity: 0.75;      /* khtml, old safari */
+					-moz-opacity: 0.75;       /* mozilla, netscape */
+					opacity: 0.75;           /* fx, safari, opera */					
+		}		
+
+
+		/**************** Form Styling ******************/
+		.bd-example { padding: 1em; }
+		
+		h4, .top-nav  
+		{ 
+			background-color: #2874A6; 
+			color: #fff;
+				
+			border-width: 2px;
+			border-radius: .3rem;
+			
+			padding-left: 1em;
+			padding-top: .3em;
+			padding-right: .3em;
+			padding-bottom: .3em;
+			
+			/*
+			box-shadow: inset 0 0 2px 1px rgba(255,255,255,0.05), 
+			0px 15px 10px -8px rgba(0, 0, 0, 0.6);
+			*/
+		}
+		
+		.top-nav { margin-bottom: 1em; }
+		
+		.top-buffer { margin-top:5px; }
+		
+		.nav-link.active { color: #fff; }
+		
+		.nav-link { color: #ccc; }
+		
+		.nav-link:hover { color: #fff; }
+		
+		.main { font-weight: bold; }
+
+		.form-check-label {  font-weight: normal; } 
+
+		
+	</style>
+	
+   	
+  <title>RetroTicker Configuration</title>
+  </head>
+  <body>
+
+	
+		
+	<!-- <div class="dim" id="loading"><div class="loader">Loading...</div></div> -->
+		
+	
+	
+
+	<div class="bd-example">		
+	
+
+	<ul class="nav top-nav" id="top-nav">
+	  <li class="navbar-brand">RetroTicker</li>
+	  <li class="nav-item">
+		<a class="nav-link" href="./">Main Menu</a>
+	  </li> 
+ 
+
+	  
+	  <!--
+	  <li class="nav-item">
+		<a class="nav-link" href="./reset">Reset</a>
+	  </li>
+	  -->
+	</ul>
+	
+	
+
+	<form class="needs-validation" id="config_form" action="./config_submit" method="post" novalidate>
+	
+			<div class="alert alert-danger" style="display:none;" id="ajax_error">
+		  <strong>Error! </strong>There has been a problem trying to load the current configuration. Please refresh!
+		</div>
+	
+	 <!-- Name -->
+	  <div class="form-group">		
+			<label for="input_owner_name" class="main">Your Name</label>
+			<input type="text" class="form-control" id="input_owner_name" name="input_owner_name" placeholder="John" required>
+			<small class="form-text text-muted">So the RetroTicker can greet you in the morning or at night. On a first name basis is best. :-) </small>				
+	  </div>
+	  
+	  <div class="form-group">		
+			<label for="input_weather_city_name" class="main">Location (City)</label>
+			<input type="text" class="form-control" id="input_weather_city_name" name="input_weather_city_name" placeholder="London,UK" required>
+			<small class="form-text"><a href="http://openweathermap.org/find?q=" target="_blank">Test your entry by going here!</a></small><small class="form-text text-muted">Required in order to report the weather correctly. Format should be city name and country code divided by comma, use ISO <a href="https://en.wikipedia.org/wiki/ISO_3166-2" target="_blank">3166-2</a> country codes. e.g. 'London, UK', 'Singapore, MY', 'Sydney, AU' etc.  Test your entry  </small>			
+	  </div>	  
+	  
+	  <!-- Timezone and Wake / Sleep Times -->
+	  <div class="form-group">
+				<label for="input_timezone" class="main">Timezone</label>
+				<select class="form-control" id="input_timezone" name="input_timezone" required="required">
+					<option value="">Select</option>
+					<option value="America/Chicago">                              America/Chicago</option>
+					<option value="America/Costa_Rica">                           America/Costa_Rica</option>
+					<option value="America/Detroit">                              America/Detroit</option>
+					<option value="America/Edmonton">                             America/Edmonton</option>
+					<option value="America/Indiana/Indianapolis">                 America/Indiana/Indianapolis</option>
+					<option value="America/Kentucky/Louisville">                  America/Kentucky/Louisville</option>
+					<option value="America/Kentucky/Monticello">                  America/Kentucky/Monticello</option>
+					<option value="America/Los_Angeles">                          America/Los_Angeles</option>
+					<option value="America/Mexico_City">                          America/Mexico_City</option>
+					<option value="America/New_York">                             America/New_York</option>
+					<option value="America/Nipigon">                              America/Nipigon</option>
+					<option value="America/Toronto">                              America/Toronto</option>
+					<option value="America/Vancouver">                            America/Vancouver</option>
+					<option value="America/Whitehorse">                           America/Whitehorse</option>
+					<option value="America/Winnipeg">                             America/Winnipeg</option>
+					<option value="America/Yakutat">                              America/Yakutat</option>
+					<option value="America/Yellowknife">                          America/Yellowknife</option>
+					<option value="Asia/Bangkok">                                 Asia/Bangkok</option>
+					<option value="Asia/Hong_Kong">                               Asia/Hong_Kong</option>
+					<option value="Asia/Seoul">                                   Asia/Seoul</option>
+					<option value="Asia/Shanghai">                                Asia/Shanghai</option>
+					<option value="Asia/Singapore">                               Asia/Singapore</option>
+					<option value="Asia/Tokyo">                                   Asia/Tokyo</option>
+					<option value="Australia/Adelaide">                           Australia/Adelaide</option>
+					<option value="Australia/Brisbane">                           Australia/Brisbane</option>
+					<option value="Australia/Broken_Hill">                        Australia/Broken_Hill</option>
+					<option value="Australia/Currie">                             Australia/Currie</option>
+					<option value="Australia/Darwin">                             Australia/Darwin</option>
+					<option value="Australia/Eucla">                              Australia/Eucla</option>
+					<option value="Australia/Hobart">                             Australia/Hobart</option>
+					<option value="Australia/Lindeman">                           Australia/Lindeman</option>
+					<option value="Australia/Lord_Howe">                          Australia/Lord_Howe</option>
+					<option value="Australia/Melbourne">                          Australia/Melbourne</option>
+					<option value="Australia/Perth">                              Australia/Perth</option>
+					<option value="Australia/Sydney">                             Australia/Sydney</option>
+					<option value="Europe/Amsterdam">                             Europe/Amsterdam</option>
+					<option value="Europe/Andorra">                               Europe/Andorra</option>
+					<option value="Europe/Astrakhan">                             Europe/Astrakhan</option>
+					<option value="Europe/Athens">                                Europe/Athens</option>
+					<option value="Europe/Belgrade">                              Europe/Belgrade</option>
+					<option value="Europe/Berlin">                                Europe/Berlin</option>
+					<option value="Europe/Bratislava">                            Europe/Bratislava</option>
+					<option value="Europe/Brussels">                              Europe/Brussels</option>
+					<option value="Europe/Bucharest">                             Europe/Bucharest</option>
+					<option value="Europe/Budapest">                              Europe/Budapest</option>
+					<option value="Europe/Busingen">                              Europe/Busingen</option>
+					<option value="Europe/Chisinau">                              Europe/Chisinau</option>
+					<option value="Europe/Copenhagen">                            Europe/Copenhagen</option>
+					<option value="Europe/Dublin">                                Europe/Dublin</option>
+					<option value="Europe/Gibraltar">                             Europe/Gibraltar</option>
+					<option value="Europe/Guernsey">                              Europe/Guernsey</option>
+					<option value="Europe/Helsinki">                              Europe/Helsinki</option>
+					<option value="Europe/Isle_of_Man">                           Europe/Isle_of_Man</option>
+					<option value="Europe/Istanbul">                              Europe/Istanbul</option>
+					<option value="Europe/Jersey">                                Europe/Jersey</option>
+					<option value="Europe/Kaliningrad">                           Europe/Kaliningrad</option>
+					<option value="Europe/Kiev">                                  Europe/Kiev</option>
+					<option value="Europe/Kirov">                                 Europe/Kirov</option>
+					<option value="Europe/Lisbon">                                Europe/Lisbon</option>
+					<option value="Europe/Ljubljana">                             Europe/Ljubljana</option>
+					<option value="Europe/London">                                Europe/London</option>
+					<option value="Europe/Luxembourg">                            Europe/Luxembourg</option>
+					<option value="Europe/Madrid">                                Europe/Madrid</option>
+					<option value="Europe/Malta">                                 Europe/Malta</option>
+					<option value="Europe/Mariehamn">                             Europe/Mariehamn</option>
+					<option value="Europe/Minsk">                                 Europe/Minsk</option>
+					<option value="Europe/Monaco">                                Europe/Monaco</option>
+					<option value="Europe/Moscow">                                Europe/Moscow</option>
+					<option value="Europe/Oslo">                                  Europe/Oslo</option>
+					<option value="Europe/Paris">                                 Europe/Paris</option>
+					<option value="Europe/Podgorica">                             Europe/Podgorica</option>
+					<option value="Europe/Prague">                                Europe/Prague</option>
+					<option value="Europe/Riga">                                  Europe/Riga</option>
+					<option value="Europe/Rome">                                  Europe/Rome</option>
+					<option value="Europe/Samara">                                Europe/Samara</option>
+					<option value="Europe/San_Marino">                            Europe/San_Marino</option>
+					<option value="Europe/Sarajevo">                              Europe/Sarajevo</option>
+					<option value="Europe/Saratov">                               Europe/Saratov</option>
+					<option value="Europe/Simferopol">                            Europe/Simferopol</option>
+					<option value="Europe/Skopje">                                Europe/Skopje</option>
+					<option value="Europe/Sofia">                                 Europe/Sofia</option>
+					<option value="Europe/Stockholm">                             Europe/Stockholm</option>
+					<option value="Europe/Tallinn">                               Europe/Tallinn</option>
+					<option value="Europe/Tirane">                                Europe/Tirane</option>
+					<option value="Europe/Ulyanovsk">                             Europe/Ulyanovsk</option>
+					<option value="Europe/Uzhgorod">                              Europe/Uzhgorod</option>
+					<option value="Europe/Vaduz">                                 Europe/Vaduz</option>
+					<option value="Europe/Vatican">                               Europe/Vatican</option>
+					<option value="Europe/Vienna">                                Europe/Vienna</option>
+					<option value="Europe/Vilnius">                               Europe/Vilnius</option>
+					<option value="Europe/Volgograd">                             Europe/Volgograd</option>
+					<option value="Europe/Warsaw">                                Europe/Warsaw</option>
+					<option value="Europe/Zagreb">                                Europe/Zagreb</option>
+					<option value="Europe/Zaporozhye">                            Europe/Zaporozhye</option>
+					<option value="Europe/Zurich">                                Europe/Zurich</option>
+					<option value="UTC">UTC</option>
+				</select>
+			</div>
+
+
+			<div class="form-group">
+				<label for="input_wake_sleep_mode" class="main">Wake and Sleep Mode</label>
+				<select class="form-control" id="input_wake_sleep_mode" name="input_wake_sleep_mode">		
+					<option value="0">On with light, off in darkness (default)</option>
+					<option value="1">Always on</option>
+					<option value="2">On at wake-up time, off at sleep time</option>
+					<option value="3">Weekday mornings & evenings and all-day weekends</option>					
+																					
+				</select>
+					<small class="form-text text-muted">When do you want the RetroTicker to be awake? When do you want it to turn off?</small>
+			</div>
+
+
+			<div class="form-group ">
+				<label for="input_wakeup_time" class="main">Wake and Sleep Time</label>
+				<div class="row">
+					<div class="col-6">
+					<select class="form-control" id="input_wakeup_time" name="input_wakeup_time" required="required">
+					<option value="">Select Wake Time</option>				
+					<option value="00_00">00:00 (12:00 am)</option>
+					<option value="00_15">00:15 (12:15 am)</option>
+					<option value="00_30">00:30 (12:30 am)</option>
+					<option value="00_45">00:45 (12:45 am)</option>
+					<option value="01_00">01:00 (01:00 am)</option>
+					<option value="01_15">01:15 (01:15 am)</option>
+					<option value="01_30">01:30 (01:30 am)</option>
+					<option value="01_45">01:45 (01:45 am)</option>
+					<option value="02_00">02:00 (02:00 am)</option>
+					<option value="02_15">02:15 (02:15 am)</option>
+					<option value="02_30">02:30 (02:30 am)</option>
+					<option value="02_45">02:45 (02:45 am)</option>
+					<option value="03_00">03:00 (03:00 am)</option>
+					<option value="03_15">03:15 (03:15 am)</option>
+					<option value="03_30">03:30 (03:30 am)</option>
+					<option value="03_45">03:45 (03:45 am)</option>
+					<option value="04_00">04:00 (04:00 am)</option>
+					<option value="04_15">04:15 (04:15 am)</option>
+					<option value="04_30">04:30 (04:30 am)</option>
+					<option value="04_45">04:45 (04:45 am)</option>
+					<option value="05_00">05:00 (05:00 am)</option>
+					<option value="05_15">05:15 (05:15 am)</option>
+					<option value="05_30">05:30 (05:30 am)</option>
+					<option value="05_45">05:45 (05:45 am)</option>
+					<option value="06_00">06:00 (06:00 am)</option>
+					<option value="06_15">06:15 (06:15 am)</option>
+					<option value="06_30">06:30 (06:30 am)</option>
+					<option value="06_45">06:45 (06:45 am)</option>
+					<option value="07_00">07:00 (07:00 am)</option>
+					<option value="07_15">07:15 (07:15 am)</option>
+					<option value="07_30">07:30 (07:30 am)</option>
+					<option value="07_45">07:45 (07:45 am)</option>
+					<option value="08_00">08:00 (08:00 am)</option>
+					<option value="08_15">08:15 (08:15 am)</option>
+					<option value="08_30">08:30 (08:30 am)</option>
+					<option value="08_45">08:45 (08:45 am)</option>
+					<option value="09_00">09:00 (09:00 am)</option>
+					<option value="09_15">09:15 (09:15 am)</option>
+					<option value="09_30">09:30 (09:30 am)</option>
+					<option value="09_45">09:45 (09:45 am)</option>
+					<option value="10_00">10:00 (10:00 am)</option>
+					<option value="10_15">10:15 (10:15 am)</option>
+					<option value="10_30">10:30 (10:30 am)</option>
+					<option value="10_45">10:45 (10:45 am)</option>
+					<option value="11_00">11:00 (11:00 am)</option>
+					<option value="11_15">11:15 (11:15 am)</option>
+					<option value="11_30">11:30 (11:30 am)</option>
+					<option value="11_45">11:45 (11:45 am)</option>
+					<option value="12_00">12:00 (12:00 pm)</option>
+					<option value="12_15">12:15 (12:15 pm)</option>
+					<option value="12_30">12:30 (12:30 pm)</option>
+					<option value="12_45">12:45 (12:45 pm)</option>
+					<option value="13_00">13:00 (01:00 pm)</option>
+					<option value="13_15">13:15 (01:15 pm)</option>
+					<option value="13_30">13:30 (01:30 pm)</option>
+					<option value="13_45">13:45 (01:45 pm)</option>
+					<option value="14_00">14:00 (02:00 pm)</option>
+					<option value="14_15">14:15 (02:15 pm)</option>
+					<option value="14_30">14:30 (02:30 pm)</option>
+					<option value="14_45">14:45 (02:45 pm)</option>
+					<option value="15_00">15:00 (03:00 pm)</option>
+					<option value="15_15">15:15 (03:15 pm)</option>
+					<option value="15_30">15:30 (03:30 pm)</option>
+					<option value="15_45">15:45 (03:45 pm)</option>
+					<option value="16_00">16:00 (04:00 pm)</option>
+					<option value="16_15">16:15 (04:15 pm)</option>
+					<option value="16_30">16:30 (04:30 pm)</option>
+					<option value="16_45">16:45 (04:45 pm)</option>
+					<option value="17_00">17:00 (05:00 pm)</option>
+					<option value="17_15">17:15 (05:15 pm)</option>
+					<option value="17_30">17:30 (05:30 pm)</option>
+					<option value="17_45">17:45 (05:45 pm)</option>
+					<option value="18_00">18:00 (06:00 pm)</option>
+					<option value="18_15">18:15 (06:15 pm)</option>
+					<option value="18_30">18:30 (06:30 pm)</option>
+					<option value="18_45">18:45 (06:45 pm)</option>
+					<option value="19_00">19:00 (07:00 pm)</option>
+					<option value="19_15">19:15 (07:15 pm)</option>
+					<option value="19_30">19:30 (07:30 pm)</option>
+					<option value="19_45">19:45 (07:45 pm)</option>
+					<option value="20_00">20:00 (08:00 pm)</option>
+					<option value="20_15">20:15 (08:15 pm)</option>
+					<option value="20_30">20:30 (08:30 pm)</option>
+					<option value="20_45">20:45 (08:45 pm)</option>
+					<option value="21_00">21:00 (09:00 pm)</option>
+					<option value="21_15">21:15 (09:15 pm)</option>
+					<option value="21_30">21:30 (09:30 pm)</option>
+					<option value="21_45">21:45 (09:45 pm)</option>
+					<option value="22_00">22:00 (10:00 pm)</option>
+					<option value="22_15">22:15 (10:15 pm)</option>
+					<option value="22_30">22:30 (10:30 pm)</option>
+					<option value="22_45">22:45 (10:45 pm)</option>
+					<option value="23_00">23:00 (11:00 pm)</option>
+					<option value="23_15">23:15 (11:15 pm)</option>
+					<option value="23_30">23:30 (11:30 pm)</option>
+					<option value="23_45">23:45 (11:45 pm)</option>
+					<option value="23_55">23:55 (11:55 pm)</option>
+					</select>
+					</div>					
+					<div class="col-6">
+						<select class="form-control" id="input_sleep_time" name="input_sleep_time" required="required">
+							<option value="">Select Sleep Time</option>				
+							<option value="00_00">00:00 (12:00 am)</option>
+							<option value="00_15">00:15 (12:15 am)</option>
+							<option value="00_30">00:30 (12:30 am)</option>
+							<option value="00_45">00:45 (12:45 am)</option>
+							<option value="01_00">01:00 (01:00 am)</option>
+							<option value="01_15">01:15 (01:15 am)</option>
+							<option value="01_30">01:30 (01:30 am)</option>
+							<option value="01_45">01:45 (01:45 am)</option>
+							<option value="02_00">02:00 (02:00 am)</option>
+							<option value="02_15">02:15 (02:15 am)</option>
+							<option value="02_30">02:30 (02:30 am)</option>
+							<option value="02_45">02:45 (02:45 am)</option>
+							<option value="03_00">03:00 (03:00 am)</option>
+							<option value="03_15">03:15 (03:15 am)</option>
+							<option value="03_30">03:30 (03:30 am)</option>
+							<option value="03_45">03:45 (03:45 am)</option>
+							<option value="04_00">04:00 (04:00 am)</option>
+							<option value="04_15">04:15 (04:15 am)</option>
+							<option value="04_30">04:30 (04:30 am)</option>
+							<option value="04_45">04:45 (04:45 am)</option>
+							<option value="05_00">05:00 (05:00 am)</option>
+							<option value="05_15">05:15 (05:15 am)</option>
+							<option value="05_30">05:30 (05:30 am)</option>
+							<option value="05_45">05:45 (05:45 am)</option>
+							<option value="06_00">06:00 (06:00 am)</option>
+							<option value="06_15">06:15 (06:15 am)</option>
+							<option value="06_30">06:30 (06:30 am)</option>
+							<option value="06_45">06:45 (06:45 am)</option>
+							<option value="07_00">07:00 (07:00 am)</option>
+							<option value="07_15">07:15 (07:15 am)</option>
+							<option value="07_30">07:30 (07:30 am)</option>
+							<option value="07_45">07:45 (07:45 am)</option>
+							<option value="08_00">08:00 (08:00 am)</option>
+							<option value="08_15">08:15 (08:15 am)</option>
+							<option value="08_30">08:30 (08:30 am)</option>
+							<option value="08_45">08:45 (08:45 am)</option>
+							<option value="09_00">09:00 (09:00 am)</option>
+							<option value="09_15">09:15 (09:15 am)</option>
+							<option value="09_30">09:30 (09:30 am)</option>
+							<option value="09_45">09:45 (09:45 am)</option>
+							<option value="10_00">10:00 (10:00 am)</option>
+							<option value="10_15">10:15 (10:15 am)</option>
+							<option value="10_30">10:30 (10:30 am)</option>
+							<option value="10_45">10:45 (10:45 am)</option>
+							<option value="11_00">11:00 (11:00 am)</option>
+							<option value="11_15">11:15 (11:15 am)</option>
+							<option value="11_30">11:30 (11:30 am)</option>
+							<option value="11_45">11:45 (11:45 am)</option>
+							<option value="12_00">12:00 (12:00 pm)</option>
+							<option value="12_15">12:15 (12:15 pm)</option>
+							<option value="12_30">12:30 (12:30 pm)</option>
+							<option value="12_45">12:45 (12:45 pm)</option>
+							<option value="13_00">13:00 (01:00 pm)</option>
+							<option value="13_15">13:15 (01:15 pm)</option>
+							<option value="13_30">13:30 (01:30 pm)</option>
+							<option value="13_45">13:45 (01:45 pm)</option>
+							<option value="14_00">14:00 (02:00 pm)</option>
+							<option value="14_15">14:15 (02:15 pm)</option>
+							<option value="14_30">14:30 (02:30 pm)</option>
+							<option value="14_45">14:45 (02:45 pm)</option>
+							<option value="15_00">15:00 (03:00 pm)</option>
+							<option value="15_15">15:15 (03:15 pm)</option>
+							<option value="15_30">15:30 (03:30 pm)</option>
+							<option value="15_45">15:45 (03:45 pm)</option>
+							<option value="16_00">16:00 (04:00 pm)</option>
+							<option value="16_15">16:15 (04:15 pm)</option>
+							<option value="16_30">16:30 (04:30 pm)</option>
+							<option value="16_45">16:45 (04:45 pm)</option>
+							<option value="17_00">17:00 (05:00 pm)</option>
+							<option value="17_15">17:15 (05:15 pm)</option>
+							<option value="17_30">17:30 (05:30 pm)</option>
+							<option value="17_45">17:45 (05:45 pm)</option>
+							<option value="18_00">18:00 (06:00 pm)</option>
+							<option value="18_15">18:15 (06:15 pm)</option>
+							<option value="18_30">18:30 (06:30 pm)</option>
+							<option value="18_45">18:45 (06:45 pm)</option>
+							<option value="19_00">19:00 (07:00 pm)</option>
+							<option value="19_15">19:15 (07:15 pm)</option>
+							<option value="19_30">19:30 (07:30 pm)</option>
+							<option value="19_45">19:45 (07:45 pm)</option>
+							<option value="20_00">20:00 (08:00 pm)</option>
+							<option value="20_15">20:15 (08:15 pm)</option>
+							<option value="20_30">20:30 (08:30 pm)</option>
+							<option value="20_45">20:45 (08:45 pm)</option>
+							<option value="21_00">21:00 (09:00 pm)</option>
+							<option value="21_15">21:15 (09:15 pm)</option>
+							<option value="21_30">21:30 (09:30 pm)</option>
+							<option value="21_45">21:45 (09:45 pm)</option>
+							<option value="22_00">22:00 (10:00 pm)</option>
+							<option value="22_15">22:15 (10:15 pm)</option>
+							<option value="22_30">22:30 (10:30 pm)</option>
+							<option value="22_45">22:45 (10:45 pm)</option>
+							<option value="23_00">23:00 (11:00 pm)</option>
+							<option value="23_15">23:15 (11:15 pm)</option>
+							<option value="23_30">23:30 (11:30 pm)</option>
+							<option value="23_45">23:45 (11:45 pm)</option>
+							<option value="23_55">23:55 (11:55 pm)</option>
+						</select>
+					</div>
+				</div>
+				<small class="form-text text-muted">Should you wish the device to wake up and sleep at specific times, provide below.</small>	
+			</div>
+
+		<div class="form-group">
+			<label for="input_ticker_1" class="main">Cryptocurrencies of Interest</label>
+						
+			<!-- Crypto & Quantity Entry -->
+			<div class="row top-buffer">
+				<div class="col-2">
+					<input type="text" class="form-control" id="input_crypto_1" name="input_crypto_1" placeholder="">
+				</div>
+				<div class="col-2">
+					<input type="text" class="form-control" id="input_crypto_2" name="input_crypto_2" placeholder="">
+				</div>
+				<div class="col-2">
+					<input type="text" class="form-control" id="input_crypto_3" name="input_crypto_3" placeholder="">
+				</div>
+				<div class="col-2">
+					<input type="text" class="form-control" id="input_crypto_4" name="input_crypto_4" placeholder="">
+				</div>
+				<div class="col-2">
+					<input type="text" class="form-control" id="input_crypto_5" name="input_crypto_5" placeholder="">
+				</div>		
+				<div class="col-2">
+					<input type="text" class="form-control" id="input_crypto_6" name="input_crypto_6" placeholder="">					
+				</div>											
+			</div>
+			<small id="input_crypto_help" style="padding-bottom: 10px;" class="form-text text-muted">Enter cryptocurrency codes such as 'BTC', 'ETH', 'LTC' etc.</small>				
+			
+
+		</div> <!-- end crypto portfolio -->
+
+		<div class="form-group">
+			<label for="input_stock_1" class="main">Equities (Stocks) of Interest</label>
+						
+			<!-- Crypto & Quantity Entry -->
+			<div class="row top-buffer">
+				<div class="col-2">
+					<input type="text" class="form-control" id="input_stock_1" name="input_stock_1" placeholder="ASX:CBA">
+				</div>
+				<div class="col-2">
+					<input type="text" class="form-control" id="input_stock_2" name="input_stock_2" placeholder="">
+				</div>
+				<div class="col-2">
+					<input type="text" class="form-control" id="input_stock_3" name="input_stock_3" placeholder="">
+				</div>
+				<div class="col-2">
+					<input type="text" class="form-control" id="input_stock_4" name="input_stock_4" placeholder="">
+				</div>
+				<div class="col-2">
+					<input type="text" class="form-control" id="input_stock_5" name="input_stock_5" placeholder="">
+				</div>		
+				<div class="col-2">
+					<input type="text" class="form-control" id="input_stock_6" name="input_stock_6" placeholder="">
+				</div>	
+			</div>
+
+			<small id="input_stock_help" style="padding-bottom: 10px;" class="form-text text-muted">Enter the equities stock codes of interest, prefixed by the market exchange they are listed on. i.e. 'ASX:CBA'.</small>				
+		</div> <!-- end crypto portfolio -->	
+
+
+
+		<div class="form-group ">
+			<label for="input_countdown_name" class="main">Countdown Timer</label>
+			<div class="row">
+				<div class="col-6">
+					<input type="text" class="form-control" id="input_countdown_name" name="input_countdown_name" placeholder="e.g. My Birthday">
+				</div>					
+				<div class="col-6">
+					<input type="text" class="form-control" id="input_countdown_datetime" name="input_countdown_datetime">
+				</div>
+			</div>
+			<small class="form-text text-muted">If you want to have a countdown timer displayed to a specific name at the date and time of interest.</small>	
+		</div>
+	
+
+
+			
+	<!-- Start news feed config - Ensure javascript and proxy is updated with codes as well -->
+	<div class="form-group">		
+		<label for="input_news_codes" class="main">News Categories of Interest</label><br />
+		<!--
+		<div class="form-check form-check-inline">
+			<input class="form-check-input" type="checkbox" id="feed_CB" value="CB" >
+			<label class="form-check-label" for="feed_CB">Crunchbase</label>
+		  </div>		
+		  -->
+		<div id="news_checkbox_html"></div>
+		<small style="padding-bottom: 10px;" class="form-text text-muted">Select the types of latest news topics you would like to recieve. Select none if you do not wish to recieve any news. </small>
+		<div class="row top-buffer">
+			<label for="input_news_limit" class="col-6 col-form-label">News Headlines Limit:</label>
+			<div class="col-6">
+					<select class="form-control" id="input_news_limit" name="input_news_limit">			
+						<option value="1">1</option>
+						<option value="2">2</option>
+						<option value="3">3</option>
+						<option value="4">4</option>				  
+						<option value="5">5</option>				  
+						<option value="10">10 (default)</option>				  
+						<option value="15">15</option>				  
+						<option value="20">20</option>				  												
+					  </select>
+			</div>				
+		</div>		
+	</div>		
+
+
+	<div class="form-group">
+		<label for="input_freq_date" class="main">Content Display Frequency</label>				
+		<div class="row top-buffer">
+			<label for="input_freq_date" class="col-6 col-form-label">Date:</label>
+			<div class="col-6">
+					<select class="form-control" id="input_freq_date" name="input_freq_date">			
+						<option value="0">Always (default)</option>
+						<option value="1">Hourly</option>
+						<option value="2">Random</option>
+						<option value="3">Never</option>				  
+					  </select>
+			</div>				
+		</div>
+
+		<div class="row top-buffer">
+			<label for="input_freq_crypto" class="col-6 col-form-label">Cryptocurrencies:</label>
+			<div class="col-6">
+				<select class="form-control" id="input_freq_crypto" name="input_freq_crypto">
+					<option value="0">Always (default)</option>
+					<option value="1">Hourly</option>
+					<option value="2">Random</option>
+					<option value="3">Never</option>				  
+				  </select>
+			</div>				
+		</div>	
+		
+
+		<div class="row top-buffer">
+			<label for="input_freq_news" class="col-6 col-form-label">News:</label>
+			<div class="col-6">
+				<select class="form-control" id="input_freq_news" name="input_freq_news">
+					<option value="0">Always (default)</option>
+					<option value="1">Hourly</option>
+					<option value="2">Random</option>
+					<option value="3">Never</option>				  
+				  </select>
+			</div>				
+		</div>	
+		
+
+		<div class="row top-buffer">
+			<label for="input_freq_weather" class="col-6 col-form-label">Weather & Forecast:</label>
+			<div class="col-6">
+				<select class="form-control" id="input_freq_weather" name="input_freq_weather">				
+				<option value="0">Always (default)</option>
+				<option value="1">Hourly</option>
+				<option value="2">Random</option>
+				<option value="3">Never</option>				  
+			  </select>
+			</div>				
+		</div>	
+		
+		<div class="row top-buffer">
+			<label for="input_freq_stock" class="col-6 col-form-label">Stocks:</label>
+			<div class="col-6">
+				<select class="form-control" id="input_freq_stock" name="input_freq_stock">				
+				<option value="0">Always (default)</option>
+				<option value="1">Hourly</option>
+				<option value="2">Random</option>
+				<option value="3">Never</option>				  
+			  </select>
+			</div>				
+		</div>	
+		
+		
+		<div class="row top-buffer">
+			<label for="input_freq_countdown" class="col-6 col-form-label">Countdown:</label>
+			<div class="col-6">
+				<select class="form-control" id="input_freq_countdown" name="input_freq_countdown">				
+				<option value="0">Always (default)</option>
+				<option value="1">Hourly</option>
+				<option value="2">Random</option>
+				<option value="3">Never</option>				  
+			  </select>
+			</div>				
+		</div>				
+
+		<small style="padding-bottom: 10px;" class="form-text text-muted">Determines the mix of information displayed on the ticker. If all options are set to 'Never' the device will display the current time only (i.e. become a simple digital clock). Countdown will only display if configured with a valid name and date & time in the future.</small>
+	</div> <!-- end crypto portfolio -->
+		
+
+
+		
+	<div class="form-group">
+			<label for="input_matrix_brightness_mode" class="main">Display Brightness</label>
+			<select class="form-control" id="input_matrix_brightness_mode" name="input_matrix_brightness_mode">		
+				<option value="0">Adaptive (recommended)</option>
+				<option value="1">Minimum Brightness</option>
+				<option value="2">Maximum Brightness</option>
+			</select>
+				<small style="padding-bottom: 10px;" class="form-text text-muted">Determines the display brightness. Adaptive (default) recommended. </small>
+	</div>
+	
+	<div class="form-group">
+			<label for="input_scroll_speed" class="main">Display Scroll Speed</label>
+			<select class="form-control" id="input_scroll_speed" name="input_scroll_speed">		
+				<option value="0">Normal (default)</option>
+				<option value="1">Slower</option>
+				<option value="2">Faster</option>
+				<option value="3">Insane Mode</option>
+			</select>
+				<small style="padding-bottom: 10px;" class="form-text text-muted">Determines the speed text scrolls across the display. </small>
+	</div>	
+	
+	
+<!--
+	  <div class="form-group">		
+	 
+			<label for="input_password" class="main">Login Code</label>
+			<div class="col-6">
+			<input type="text" class="form-control" id="input_password" maxlength="8" name="input_password" placeholder="e.g. 123456" required>
+			</div>
+			<small class="form-text text-muted">Required so the configuration can't be easily changed. Don't use a password you use elsewhere. Only change this if you want to. Maximum length of 8 characters.</small>				
+	  </div>	
+-->
+	
+		
+		<div class="alert alert-danger" style="display:none;" id="validation_error">
+		  <strong>Error! </strong>There appears to be some issue with the values provided. Please double check the configuration.
+		</div>
+
+		<!-- Hidden params form -->
+		<input type="text" name="input_news_codes" id="input_news_codes" value="" style="display: none;"  />
+
+	   <button class="btn btn-primary" type="submit">Save Configuration</button>
+	</form>
+	<!-- end bd example -->
+</div>
+	
+
+<script>
+
+	// Ensure that the iot proxy script is updated to reflect these values
+	var feed_codes  = [ 'SH', 'SW', 'SB', 'ST', 'SR', 'CD', 'CB', 'CC', 'BT', 'BW', 'BA',];
+	var feed_names  = [ 'Sky Home', 'Sky World', 'Sky Business', 'Sky Tech', 'Sky Random', 'CoinDesk', 'CrunchBase', 'Crypto General', 'BBC UK', 'BBC US & Canada', 'BBC Australia'];
+
+	var input_countdown_datetime_picker = null;
+
+	// Update feed codes hidden element
+	function update_news_feed_hidden_input() {
+
+		console.log("Performing hidden news feed input update.");
+
+		var vals = "";
+		for (var i=0, n=feed_codes.length;i<n;i++) {
+
+			console.log('Checking state of checkbox with ID: feed_' + feed_codes[i]);			
+			var checkbox = document.getElementById('feed_' + feed_codes[i]);		
+			
+			//console.log(checkbox);
+			if (checkbox.checked) {
+				vals += ","+feed_codes[i];
+				console.log("It is checked.");
+			}
+		} // update feed code input
+		
+		if (vals) vals = vals.substring(1);
+		document.getElementById("input_news_codes").value = vals;
+		
+		console.log(vals);
+
+	} // update feed codes
+
+	// Action on all feed code inputs
+	$('input:checkbox').change(function()  {
+		update_news_feed_hidden_input();
+	})	
+
+	// For the feed selection checkboxes.
+	function update_news_feed_selection_checkboxes() {	}
+
+	function generate_news_feed_selection_checkboxes() {
+
+		var json_config_news_codes = document.getElementById("input_news_codes").value;
+
+		for (var i=0, n=feed_codes.length;i<n;i++) 
+		{
+			console.log('Checking state of checkbox with ID: feed_' + feed_codes[i]);
+			var checkbox_id = 'feed_' + feed_codes[i];
+
+			var checked_str = "";
+			if (json_config_news_codes.indexOf(feed_codes[i]) !== -1)
+			{
+				checked_str = "checked";
+			}
+			var checkbox_html = '<div class="form-check form-check-inline"><input onclick="update_news_feed_hidden_input();" class="form-check-input" type="checkbox" id="' + checkbox_id +'" value="' + feed_codes[i] + '" ' + checked_str +'><label class="form-check-label" for="' + checkbox_id + '">'+ feed_names[i] +'</label></div>';
+
+			$( "#news_checkbox_html" ).append( checkbox_html );
+		}
+	}
+
+	function hide_greyscreen()
+	{
+			var error_element = document.getElementById("loading");
+			error_element.style.display = "none" ;	
+				
+			console.log("Got rid of the grey dimming and loading animation.");
+	}
+
+	/* https://stackoverflow.com/questions/7298364/using-jquery-and-json-to-populate-forms */
+	// Populate 1:1 form name to json key pairs
+	function populate(data, frm) {   
+
+		$.each(data, function(key, value) {  
+			var ctrl = $('[name='+key+']', frm);  
+			switch(ctrl.prop("type")) { 
+				case "radio": case "checkbox":   
+					ctrl.each(function() {
+						if($(this).attr('value') == value) $(this).attr("checked",value);
+					});   
+					break;  
+				default:
+					ctrl.val(value); 
+			}  
+		});  
+	}	
+
+	
+	/* Show a loading error due to the AJAX */
+	function show_error(jqery, status, error)
+	{
+			var error_element = document.getElementById("ajax_error");
+			error_element.style.display = "block" ;	
+				
+			console.log("An error occured trying to load the AJAX. Showing error message.");
+			console.log("Status: " + status);
+			console.log("Error: "  + error);
+	}
+
+	console.log("Loading the Configuration from server...");			
+	// https://stackoverflow.com/questions/14754619/jquery-ajax-success-callback-function-definition
+
+	// Only execute the AJAX query after a second or so, give the ESP some time
+	// after delivering the HTML
+	setTimeout(function() {
+		
+		$.ajax({
+			url 	: "./config.json",
+			type 	: "GET",
+			dataType : "json",
+			error : show_error
+
+		})
+			.done(function(data/* , textStatus, jqXHR */ ) 
+			{
+			
+				console.log("Returned Data:");
+				console.log(data);
+				
+				console.log("Populating the Configuration from server...");
+				populate(data, '#config_form');
+				
+				console.log("Updating news feed selection checkboxes.");
+				generate_news_feed_selection_checkboxes();
+				update_news_feed_selection_checkboxes();				
+				update_news_feed_hidden_input();
+				//hide_greyscreen();	
+
+				var defaultDate = new Date();				
+				defaultDate.setDate(new Date().getDate()+1); 
+				if (   data['input_countdown_datetime'] ) // is not undefined
+				{
+					var date1 = new Date(data['input_countdown_datetime'] * 1000);
+					var date2 = new Date();
+
+					if ( date1 > date2) { 
+						defaultDate = date1;
+					}
+				}
+				
+				// Show date picker
+				input_countdown_datetime_picker = flatpickr('#input_countdown_datetime', 
+															{ 	altInput: true,
+    															altFormat: "F j, Y H:i K",
+																enableTime: true, 
+																dateFormat: "U", // Unix Timestamp
+																defaultDate: defaultDate,
+															}
+				);
+			});
+
+	}, 1000);
+
+
+	// Example starter JavaScript for disabling form submissions if there are invalid fields
+	(function() {
+		'use strict';
+		window.addEventListener('load', function() {
+		// Fetch all the forms we want to apply custom Bootstrap validation styles to
+		var forms = document.getElementsByClassName('needs-validation');
+		// Loop over them and prevent submission
+		var validation = Array.prototype.filter.call(forms, function(form) {
+			form.addEventListener('submit', function(event) {
+			
+			// convert feed selection checkboxes to csv array
+			//update_feed_selection_hidden_input();
+			
+			
+			if (form.checkValidity() === false) {
+			
+				var element2 = document.getElementById("validation_error");
+				element2.style.display = "block" ;	
+			
+				event.preventDefault();
+				event.stopPropagation();
+				
+			}
+			form.classList.add('was-validated');
+			}, false);
+		});
+		}, false);
+	})();
+	
+
+	// Some inter-dropdown interactions
+	// only perform this if we're all loaded etc.
+	$(document).ready(function() {
+
+		//alert("ready");
+
+
+	});
+
+</script>		
+
+  </body>
+</html>
+<!--
+
+  #####  ####### ####### ######  ######  #     # ####### ### 
+ #     # #     # #     # #     # #     #  #   #  #       ### 
+ #       #     # #     # #     # #     #   # #   #       ### 
+ #  #### #     # #     # #     # ######     #    #####    #  
+ #     # #     # #     # #     # #     #    #    #           
+ #     # #     # #     # #     # #     #    #    #       ### 
+  #####  ####### ####### ######  ######     #    ####### ### 
+                                                             
+															 -->

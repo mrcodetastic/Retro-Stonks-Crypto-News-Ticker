@@ -82,6 +82,7 @@ bool lfs_OK = false;
 /*---------------------------- Class Instances -------------------------------*/
 ESP8266WebServer    webServer(80);
 AutoConnect         Portal(webServer);
+AutoConnectConfig   PortalConfig;
 WiFiClient          client;
 HTTPClient          http; 
 MD_Parola           Parola = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES); 
@@ -122,6 +123,7 @@ TickerConfig tickerConfig;
 char  global_endpoint_host[65]= {'\0'};
 char  global_endpoint_path[65]= {'\0'};
 
+bool  first_setup = false;
 bool  internet_up = true; // can we connect to the internet?
 
 // Current Custom User Message
@@ -227,8 +229,19 @@ void displayActivate()
 }
 
 
-bool atDetect(IPAddress& softapIP) {
-  Serial.println("Captive portal started, SoftAP IP:" + softapIP.toString());
+// This gets called if captive portal is required.
+bool atDetect(IPAddress& softapIP) 
+{
+  first_setup = true;
+
+  Sprintln(F(" * No WiFi configuration found. Starting Portal."));
+
+  // 'RetroTicker' AP will be availabe on your mobile phone, use the password 12345678 to connect
+  // and then configure the proper WiFi accesspoint for the device to connect to.
+  //Serial.println("Captive portal started, SoftAP IP:" + softapIP.toString());
+  Sprintln(F("Captive Portal started."));
+  printTextOrScrollLeft("************ No WiFi! Please connect to 'RetroTicker' on your phone to configure. ************", false, 25);  
+  printTextOrScrollLeft("Configure WiFi", true);  
   return true;
 }
 
@@ -256,10 +269,7 @@ void setup()
     // Close EEPROM, release some memory, config contained within structures
   Sprintln(F(" * Releasing EEPROM"));
   EEPROM.end();
-
-  //EEPROM_SerialDebug();
   delay(50);
-  Sprintln(F("Starting ...."));
 
 /*
   // Setup LEDs
@@ -280,14 +290,30 @@ void setup()
   /*-------------------- START THE NETWORKING --------------------*/
   Sprintln(F(" * Starting WiFi Connection Manager"));
 
+  PortalConfig.apid = "RetroTicker";
+  PortalConfig.title = "Configure WiFi";
+  PortalConfig.menuItems = AC_MENUITEM_CONFIGNEW;
+
+  Portal.config(PortalConfig);
+
   // Starts user web site included the AutoConnect portal.
   Portal.onDetect(atDetect);
   if (Portal.begin()) {
     //Serial.println("Started, IP:" + WiFi.localIP().toString());
   }
   else {
-    Parola.print("Configure WiFi");
-    while (true) { yield(); } // Wait.
+    
+    Sprintln(F("Something went wrong?"));
+    while (true) { 
+      #if defined(ESP8266)          
+              yield(); // keep the watchdog fed. Removed: NOT relevant to ESP32
+      #endif         
+      } // Wait.
+  }
+
+  // Got here after using the portal. Lets flush memory by resetting.
+  if (first_setup) {
+    ESP.restart();
   }
 
   /* Once the WiFi network is up and running, and the HTTP server is going the next most important thing is to get the time!

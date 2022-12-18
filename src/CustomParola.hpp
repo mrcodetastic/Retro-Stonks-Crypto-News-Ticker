@@ -90,7 +90,7 @@ void printTextOrScrollLeft(const char *text, bool force_print = false, int speed
     }
 
     waitForZoneAnimationComplete();
-
+    
 }
 
 void showStartBranding()

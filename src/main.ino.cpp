@@ -45,7 +45,7 @@ bool lfs_OK = false;
 
 /*--------------------------- NETWORK CONFIGURATION ------------------------------*/
 #define MDNS_LOCAL_PREFIX "ticker" // this will result in "ticker.local" as the mDNS 
-#define FEED_UPDATE_FREQUENCY_MS (2 * 60 * 60 * 1000)
+#define FEED_UPDATE_FREQUENCY_MS (1 * 60 * 60 * 1000) // every hour
 
 /*----------------------------- TOP LED CONFIG -----------------------------------*/
 #define FASTLED_ESP8266_RAW_PIN_ORDER // need to define this before include per: https://github.com/FastLED/FastLED/wiki/ESP8266-notes
@@ -529,10 +529,9 @@ void loop()
       // Change the intensity, but only every thirty seconds or so, and if the moving average permits.
       if ((unsigned long)(current_millisecond - last_brightness_change_millisecond) > (30 * 1000) ) { // don't keep flip flopping
         if (tickerConfig.matrix_brightness_mode == BRIGHTNESS_MODE_ADAPTIVE) {
-            if (adc_maverage < 400) {  Parola.setIntensity(0); } 
-            else if (adc_maverage < 700) {  Parola.setIntensity(1); } 
+            if (adc_maverage < 900) {  Parola.setIntensity(0); } 
             else if (adc_maverage > 1000) { Parola.setIntensity(12); }
-            else { Parola.setIntensity(3); }
+            else { Parola.setIntensity(6); }
                  
           last_brightness_change_millisecond = current_millisecond;
         } // we are using adaptive brightness

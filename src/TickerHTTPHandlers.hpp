@@ -224,56 +224,56 @@ void HTTPGetConfigJSONHandler()
     sprintf(input_wakeup_time, "%02d_%02d",tickerConfig.wakeup_hour,  tickerConfig.wakeup_minute);
     sprintf(input_sleep_time,  "%02d_%02d",tickerConfig.sleep_hour,   tickerConfig.sleep_minute);    
 
-  
-    webServer.send(200, "text/json", String ( 
+    String json_output;
+    json_output.reserve(1024);
+    json_output = 
         // String quotes on consequtive lines are concatenated
         // https://forum.arduino.cc/index.php?topic=73212.0
         // { "input_owner_name":"John Smith",              "input_weather_city_name":"London,UK",              "input_timezone":"Australia/Brisbane",              "input_wakeup_time":"09_00",              "input_sleep_time":"22_20",               "input_ticker_currency":"AUD",              "input_ticker_1":"a",               "input_qty_1":"1",              "input_ticker_2":"b",               "input_qty_2":"2",              "input_ticker_3":"c",               "input_qty_3":"3",              "input_ticker_4":"d",               "input_qty_4":"4",              "input_ticker_5":"e",               "input_qty_5":"5",              "input_ticker_6":"f",               "input_qty_6":"6",              "input_ticker_7":"g",               "input_qty_7":"7",              "input_ticker_8":"h",               "input_qty_8":"8",              "input_ticker_9":"i",               "input_qty_9":"9",              "input_ticker_10":"j",              "input_qty_10":"00",              "input_matrix_brightness_mode":"1",               "input_rgb_mode":"1",               "input_custom_message_interval":"60",               "input_wake_sleep_mode":"2"}
         "{"
-        "\"input_owner_name\":\"" + String(tickerConfig.owner_name) + "\","          
-        "\"input_weather_city_name\":\"" + String(tickerConfig.weather_city_name) + "\","    
-        "\"input_weather_city_id\":\"" + String(tickerConfig.weather_city_id) + "\","            
-        "\"input_timezone\":\"" + String(tickerConfig.clock_timezone) + "\","    
-        "\"input_wakeup_time\":\"" + String(input_wakeup_time) + "\","              
-        "\"input_sleep_time\":\"" + String(input_sleep_time) + "\","               
-//        "\"input_ticker_currency\":\"" + String(tickerConfig.ticker_currency) + "\","
-//	      "\"input_ticker_mode\":\"" + String(tickerConfig.ticker_mode) + "\","            
-        "\"input_crypto_1\":\"" + String(tickerConfig.crypto_1) + "\","                     
-        "\"input_crypto_2\":\"" + String(tickerConfig.crypto_2) + "\","                     
-        "\"input_crypto_3\":\"" + String(tickerConfig.crypto_3) + "\","                     
-        "\"input_crypto_4\":\"" + String(tickerConfig.crypto_4) + "\","                     
-        "\"input_crypto_5\":\"" + String(tickerConfig.crypto_5) + "\","                     
-        "\"input_crypto_6\":\"" + String(tickerConfig.crypto_6) + "\","                             
-        "\"input_stock_1\":\"" + String(tickerConfig.stock_1) + "\","                     
-        "\"input_stock_2\":\"" + String(tickerConfig.stock_2) + "\","                     
-        "\"input_stock_3\":\"" + String(tickerConfig.stock_3) + "\","                     
-        "\"input_stock_4\":\"" + String(tickerConfig.stock_4) + "\","                     
-        "\"input_stock_5\":\"" + String(tickerConfig.stock_5) + "\","                     
-        "\"input_stock_6\":\"" + String(tickerConfig.stock_6) + "\","  
-        "\"input_news_codes\":\"" + String(tickerConfig.news_codes) + "\","                             
-        "\"input_news_limit\":\"" + String(tickerConfig.news_limit) + "\","                                     
-        "\"input_scroll_speed\":\"" + String(tickerConfig.scroll_speed) + "\","          
+        "\"input_owner_name\":\""         + String(tickerConfig.owner_name)         + "\","          
+        "\"input_weather_city_name\":\""  + String(tickerConfig.weather_city_name)  + "\","    
+        "\"input_weather_city_id\":\""    + String(tickerConfig.weather_city_id)    + "\","            
+        "\"input_timezone\":\""           + String(tickerConfig.clock_timezone)     + "\","    
+        "\"input_wakeup_time\":\""        + String(input_wakeup_time)               + "\","              
+        "\"input_sleep_time\":\""         + String(input_sleep_time)                + "\","                       
+        "\"input_crypto_1\":\""           + String(tickerConfig.crypto_1) + "\","                     
+        "\"input_crypto_2\":\""           + String(tickerConfig.crypto_2) + "\","                     
+        "\"input_crypto_3\":\""           + String(tickerConfig.crypto_3) + "\","                     
+        "\"input_crypto_4\":\""           + String(tickerConfig.crypto_4) + "\","                     
+        "\"input_crypto_5\":\""           + String(tickerConfig.crypto_5) + "\","                     
+        "\"input_crypto_6\":\""           + String(tickerConfig.crypto_6) + "\","                             
+        "\"input_stock_1\":\""            + String(tickerConfig.stock_1) + "\","                     
+        "\"input_stock_2\":\""            + String(tickerConfig.stock_2) + "\","                     
+        "\"input_stock_3\":\""            + String(tickerConfig.stock_3) + "\","                     
+        "\"input_stock_4\":\""            + String(tickerConfig.stock_4) + "\","                     
+        "\"input_stock_5\":\""            + String(tickerConfig.stock_5) + "\","                     
+        "\"input_stock_6\":\""            + String(tickerConfig.stock_6) + "\","  
+        "\"input_news_codes\":\""         + String(tickerConfig.news_codes)       + "\","                             
+        "\"input_news_limit\":\""         + String(tickerConfig.news_limit)       + "\","                                     
+        "\"input_scroll_speed\":\""       + String(tickerConfig.scroll_speed)     + "\","          
         "\"input_matrix_brightness_mode\":\"" + String(tickerConfig.matrix_brightness_mode) + "\","       
 //        "\"input_rgb_mode\":\"" + String(tickerConfig.rgb_leds_mode) + "\","                         
-        "\"input_wake_sleep_mode\":\"" + String(tickerConfig.wake_sleep_mode) + "\","              
-        "\"input_device_awake_weekends\":\"" + String(tickerConfig.device_awake_weekends) + "\","              
+        "\"input_wake_sleep_mode\":\""        + String(tickerConfig.wake_sleep_mode)        + "\","              
+        "\"input_device_awake_weekends\":\""  + String(tickerConfig.device_awake_weekends)  + "\","              
 
-        "\"input_freq_date\":\"" + String(tickerConfig.ticker_content_freq_date) + "\","              
-        "\"input_freq_crypto\":\"" + String(tickerConfig.ticker_content_freq_crypto) + "\","              
-        "\"input_freq_news\":\"" + String(tickerConfig.ticker_content_freq_news) + "\","              
-        "\"input_freq_weather\":\"" + String(tickerConfig.ticker_content_freq_weather) + "\","              
-        "\"input_freq_stock\":\"" + String(tickerConfig.ticker_content_freq_stock) + "\","              
-        "\"input_freq_countdown\":\"" + String(tickerConfig.ticker_content_freq_countdown) + "\","              
+        "\"input_freq_date\":\""              + String(tickerConfig.ticker_content_freq_date)       + "\","              
+        "\"input_freq_crypto\":\""            + String(tickerConfig.ticker_content_freq_crypto)     + "\","              
+        "\"input_freq_news\":\""              + String(tickerConfig.ticker_content_freq_news)       + "\","              
+        "\"input_freq_weather\":\""           + String(tickerConfig.ticker_content_freq_weather)    + "\","              
+        "\"input_freq_stock\":\""             + String(tickerConfig.ticker_content_freq_stock)      + "\","              
+        "\"input_freq_countdown\":\""         + String(tickerConfig.ticker_content_freq_countdown)  + "\","              
 
-        "\"input_countdown_name\":\"" + String(tickerConfig.countdown_name) + "\","              
-        "\"input_countdown_datetime\":"+ String(tickerConfig.countdown_datetime)+","      
+        "\"input_countdown_name\":\""         + String(tickerConfig.countdown_name)       + "\","              
+        "\"input_countdown_datetime\":"       + String(tickerConfig.countdown_datetime)   +","      
 
-        "\"input_password\":\"" + String(tickerConfig.login_password) + "\","
+        "\"input_password\":\""               + String(tickerConfig.login_password)       + "\","
         "\"version\":1,"
         "\"awesomeness\":1"
-        "}"
+        "}";
 
-  )); // otherwise, respond with a 404 (Not Found) error
+    // Send it.
+    webServer.send(200, "text/json", json_output); // otherwise, respond with a 404 (Not Found) error
 
 } // return a configuration string
 

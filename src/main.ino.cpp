@@ -39,7 +39,18 @@ bool lfs_OK = false;
 #include <AutoConnect.h>
 #include <ESP8266httpUpdate.h>  // For HTTP based remote firmware update
 #include <ESP8266HTTPClient.h>  // For proxy connections instead of using WiFiclient directly
-#include <TimeLib.h>            // For Time Management //http://www.arduino.cc/playground/Code/Time - https://github.com/PaulStoffregen/Time - Known issue with ESP8266 -> http://forum.arduino.cc/index.php?topic=96891.30
+#include <TimeLib2.hpp>            // For Time Management //http://www.arduino.cc/playground/Code/Time - https://github.com/PaulStoffregen/Time - Known issue with ESP8266 -> http://forum.arduino.cc/index.php?topic=96891.30
+
+TimeLib2  clockMain;
+time_t    clockMainOffset = 0;
+
+TimeLib2  clock2;
+bool      clock2_active = false;
+String    clock2TimezoneName;
+
+TimeLib2  clock3;
+bool      clock3_active = false;
+String    clock3TimezoneName;
 
 #include "JsonProcessor.hpp"
 
@@ -87,6 +98,8 @@ WiFiClient          client;
 HTTPClient          http; 
 MD_Parola           Parola = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES); 
 
+
+
 /*--------------------------- DISPLAY STATES -----------------------------*/
 // New displaystate container
 struct displayState
@@ -130,7 +143,9 @@ bool  internet_up = true; // can we connect to the internet?
 CustomMessage  customMessage;
 
 // Define global variables and const
-time_t        gmt_offset    		      = 0;
+char          clock_2_timezone_name[64];
+char          clock_3_timezone_name[64];
+
 bool          reload_required         = true; // need to do this on first boot
 int           parola_display_speed 	  = 0;
 int           parola_display_pause 	  = 0;
@@ -186,9 +201,6 @@ bool getNewsFeedData();
 bool getTimeFromServer();
 
 bool get_json_and_parse_v3(JsonProcessor &parser, const String& action_str, const String& params_str);
-
-void getFormattedDateToCharBuffer(char * parolaBuffer);
-void getFormattedTimeToCharBuffer(char * parolaBuffer);
 
 void checkForFirmwareUpdate();
 void performFilesystemUpdate();
@@ -335,7 +347,7 @@ void setup()
   webServer.on(F("/config_submit"),    HTTPConfigSubmitHandler);   // Save config
   webServer.on(F("/reset"),            HTTPConfigResetHandler);    // Flush or reset all configuation?
   webServer.on(F("/reset_submit"),     HTTPConfigResetSubmitHandler);
-  webServer.on(F("/advanced"),         HTTPConfigAdvancedHandler);    // Flush or reset all configuation?
+ // webServer.on(F("/advanced"),         HTTPConfigAdvancedHandler);    // Flush or reset all configuation?
   //webServer.on(F("/advanced_submit"),  HTTPConfigAdvancedSubmitHandler);
   webServer.on(F("/update"),           HTTPUpdateHandler);
 
@@ -390,7 +402,7 @@ void setup()
 /*---------------------------- DETERMINE DISPLAY STATE ---------------------------*/
 void determineNextDisplayState()
 {
-        time_t current_timestamp = now();
+        time_t current_timestamp = clockMain.getEpochSecond();
 
         previousDisplayState = currentDisplayState; // record this
 
@@ -482,7 +494,7 @@ void displayStringList(std::list<std::string> &string_list)
 /*---------------------------------- MAIN LOOP ----------------------------------*/
 void loop()
 {
-    time_t current_timestamp  = now();  
+    time_t current_timestamp  = clockMain.getEpochSecond();  
 
     current_millisecond       = millis(); // Note: Only provides system uptime in milliseconds.
     webServer.handleClient();       // Handle any requests as they come.
@@ -551,7 +563,7 @@ void loop()
     if ( !allZoneAnimationsCompleted() ) 
     {
       Parola.displayAnimate();
-      return;
+      return; // don't go any further from here
     }
 
 
@@ -604,12 +616,12 @@ void loop()
     if (tickerConfig.wake_sleep_mode == SLEEP_WAKE_MODE_TIME) {
         bool _result = false;
         // Are we after the wakeup hour or minute
-        if (  hour() > int(tickerConfig.wakeup_hour) ) {  _result = true; }
-        if ( (hour() == int(tickerConfig.wakeup_hour)) && (minute() >= int(tickerConfig.wakeup_minute)  ) ) { _result = true; }
+        if (  clockMain.hour() > int(tickerConfig.wakeup_hour) ) {  _result = true; }
+        if ( (clockMain.hour() == int(tickerConfig.wakeup_hour)) && (clockMain.minute() >= int(tickerConfig.wakeup_minute)  ) ) { _result = true; }
 
         // but after we after the sleep time?
-        if (  hour() > int(tickerConfig.sleep_hour) ) {  _result = false; }
-        if ( (hour() == int(tickerConfig.sleep_hour)) && (minute() >= int(tickerConfig.sleep_minute)  ) ) { _result = false; }
+        if (  clockMain.hour() > int(tickerConfig.sleep_hour) ) {  _result = false; }
+        if ( (clockMain.hour() == int(tickerConfig.sleep_hour)) && (clockMain.minute() >= int(tickerConfig.sleep_minute)  ) ) { _result = false; }
 
         if ( _result == false ) { // go to sleep
             currentDisplayState = BLACKOUT;
@@ -621,8 +633,8 @@ void loop()
     } // end sleep wake mode  - time  
 
     if (tickerConfig.wake_sleep_mode == SLEEP_WAKE_WEEKDAY_WEEKEND) {
-        if (  ( weekday() == 1 || weekday() == 7) ) { // Weekend Day
-          if (hour() > 9 && hour() < 22) { // between 9am and 10pm
+        if (  ( clockMain.weekday() == 1 || clockMain.weekday() == 7) ) { // Weekend Day
+          if (clockMain.hour() > 9 && clockMain.hour() < 22) { // between 9am and 10pm
             if (currentDisplayState == BLACKOUT) {  currentDisplayState = S_TIME;
                 Sprintln(F("It's a weekend and inside operating hours. Turning ON."));                
              }
@@ -631,8 +643,8 @@ void loop()
           } // outside weekend hours
         } // end weekend check
 
-        if ( weekday() > 1 && weekday() < 6 ) { // it's monday to friday
-          if ( (hour() > 7 && hour() < 11) || ( hour() > 17 && hour() < 20) ) { // between work hours
+        if ( clockMain.weekday() > 1 && clockMain.weekday() < 6 ) { // it's monday to friday
+          if ( (clockMain.hour() > 7 && clockMain.hour() < 11) || ( clockMain.hour() > 17 && clockMain.hour() < 20) ) { // between work hours
             if (currentDisplayState == BLACKOUT) {  currentDisplayState = S_TIME; 
                 Sprintln(F("It's a weekday and inside operating hours. Turning ON."));                
             }
@@ -700,9 +712,16 @@ void loop()
       case S_TIME: // Current Time
       {
         Sprintln(F("Showing Time."));      
-        getFormattedTimeToCharBuffer(parolaBuffer);
+        getFormattedTimeToCharBuffer(parolaBuffer, clockMain);
 
-        if ( ((previousDisplayState == currentDisplayState) && (previous_hour != hour())) || ( (rand() % 100) == 42)  ) // show a animation
+        if (displayStateCompleted == true)
+        {
+          displayStateActivityStep = 0; // sub actions
+          displayStateCompleted = false;
+        }        
+
+        // Something interesting to show on the current time
+        if ( (previous_hour != clockMain.hour()) || ( (rand() % 100) == 42) ) // show a animation
         { // Borrowed from Parola_Sprites_Simple
             Parola.displayZoneText(ZONE_LEFT, parolaBuffer, PA_CENTER, parola_display_speed, 1000, PA_PRINT, PA_SPRITE);
 
@@ -712,19 +731,63 @@ void loop()
               Parola.setSpriteData(rocket, W_ROCKET, F_ROCKET, rocket, W_ROCKET, F_ROCKET);             
             }
 
-        } else {
-          Parola.displayZoneText(ZONE_LEFT, parolaBuffer, PA_CENTER, parola_display_speed, parola_display_pause, PA_PRINT); 
-        }
+        } else  {
 
-        previous_hour = hour();
-        displayStateCompleted = true;    
+          if (displayStateActivityStep == 0) { // start with main timezone / clock
+
+                Parola.displayZoneText(ZONE_LEFT, parolaBuffer, PA_CENTER, parola_display_speed, parola_display_pause, PA_PRINT);  
+                displayStateActivityStep = 2;
+
+          } 
+          // 2.5seconds for the alternative clocks
+          else if (displayStateActivityStep == 2)
+          { 
+              if (!clock2_active) 
+              { displayStateCompleted = true; }
+              else {
+                Sprintln(F("Showing Clock 2 Time."));    
+                Parola.displayZoneText(ZONE_LEFT, clock2TimezoneName.c_str(), PA_CENTER, parola_display_speed, 2500, PA_SCROLL_UP, PA_SCROLL_UP);  
+                displayStateActivityStep = 3;
+              }
+          }
+          else if (displayStateActivityStep == 3)
+          {
+              getFormattedTimeToCharBuffer(parolaBuffer, clock2);               
+              Parola.displayZoneText(ZONE_LEFT, parolaBuffer, PA_CENTER, parola_display_speed, 2500, PA_SCROLL_UP, PA_SCROLL_UP);             
+              displayStateActivityStep = 4;
+          }
+          else if (displayStateActivityStep == 4)
+          {
+                if (!clock3_active) {displayStateCompleted = true; } 
+                else {
+                  Sprintln(F("Showing Clock 3 Time."));    
+                  Parola.displayZoneText(ZONE_LEFT, clock3TimezoneName.c_str(), PA_CENTER, parola_display_speed, 2500, PA_SCROLL_UP, PA_SCROLL_UP);   
+                  displayStateActivityStep = 5;
+                }
+          }
+          else if (displayStateActivityStep == 5)
+          {
+               getFormattedTimeToCharBuffer(parolaBuffer, clock3);               
+               Parola.displayZoneText(ZONE_LEFT, parolaBuffer, PA_CENTER, parola_display_speed, 2500, PA_SCROLL_UP, PA_SCROLL_UP); 
+                displayStateActivityStep = 6;
+               displayStateCompleted = true;            
+          }
+          else{
+            displayStateCompleted = true;  
+          }
+
+          
+        } // else
+
+        previous_hour = clockMain.hour();
+   
       }   
         break;     
 
       case S_DATE: // Current Date
       {
         Sprintln(F("Showing Date."));
-        getFormattedDateToCharBuffer(parolaBuffer);
+        getFormattedDateToCharBuffer(parolaBuffer, clockMain);
         Parola.displayZoneText(ZONE_LEFT, parolaBuffer, PA_CENTER, parola_display_speed, parola_display_pause, PA_PRINT);
         displayStateCompleted = true;
       }
@@ -961,7 +1024,68 @@ bool getAllFeedData()
     if (success) success &= getStonksData();
   } else { Sprintln(F("getAllFeedData(): User configuration skips stocks data.")); }  
 
-  return success;
+  // Get additional clocks
+    TimeProcessor processor; 
+    time_t tmp_unix_timestamp = 0;     
+    time_t tmp_offset         = 0;           
+    String tmp_clock_tz = String(tickerConfig.clock_2_timezone);  
+    if ( tmp_clock_tz.length() > 2 )
+    {
+      Sprintln(F("Getting time data for secondary clock."));
+      if (   get_json_and_parse_v3(processor, "time", "timezone=" + tmp_clock_tz) )  
+      {
+        
+          processor.update(tmp_unix_timestamp, tmp_offset);
+
+          // Set the global time via TimeLib.h, set to GMT
+          clock2.setTime(tmp_unix_timestamp);
+
+          // Set the offset for this TZ
+          clock2.setOffset(tmp_offset);
+
+          if (tmp_clock_tz.indexOf("/") == -1) { // isn't in the format of 'Australia/Sydney' or anything, so just use the full name
+            clock2TimezoneName = tmp_clock_tz;
+          }
+          else
+          {
+            clock2TimezoneName = tmp_clock_tz.substring(tmp_clock_tz.lastIndexOf("/")+1);            
+          }
+
+          clock2_active = true;
+
+          Sprintln(F("Clock 2 active."));          
+      }
+    }
+
+    tmp_clock_tz = String(tickerConfig.clock_3_timezone);  
+    if ( tmp_clock_tz.length() > 2 )
+    {
+      Sprintln(F("Getting time data for third clock."));
+      if (   get_json_and_parse_v3(processor, "time", "timezone=" + tmp_clock_tz) )  
+      {
+          processor.update(tmp_unix_timestamp, tmp_offset);
+
+          // Set the global time via TimeLib.h, set to GMT
+          clock3.setTime(tmp_unix_timestamp);
+
+          // Set the offset for this TZ
+          clock3.setOffset(tmp_offset);
+
+          if (tmp_clock_tz.indexOf("/") == -1) { // isn't in the format of 'Australia/Sydney' or anything, so just use the full name
+            clock3TimezoneName = tmp_clock_tz;
+          }
+          else
+          {
+            clock3TimezoneName = tmp_clock_tz.substring(tmp_clock_tz.lastIndexOf("/")+1);            
+          }
+
+          clock3_active = true;
+
+          Sprintln(F("Clock 3 active."));                    
+      }
+    }
+
+    return success;
 
 } // get all feed data
 
@@ -975,7 +1099,7 @@ bool getWeatherCurrentData() {
    
    CurrentWeatherProcessor processor;
 
-   processor.set_gmt_offset(gmt_offset);
+   processor.set_gmt_offset(clockMainOffset);
 
   if ( 
         !get_json_and_parse_v3( processor,"weather",
@@ -998,7 +1122,7 @@ bool getWeatherForecastData() {
 
   ForecastWeatherProcessor processor;  // Open Weather Map JSON Streaming Parser
 
-  processor.set_gmt_offset(gmt_offset);
+  processor.set_gmt_offset(clockMainOffset);
 
   // Populate this into the global httpResponse variable
   if ( !get_json_and_parse_v3(processor, "weather_forecast", String("city_id=" + String(tickerConfig.weather_city_id) + "&city_name=" + String(tickerConfig.weather_city_name))) )  {
@@ -1112,35 +1236,38 @@ bool getTimeFromServer()
 
     strncpy(global_endpoint_host,   PRI_IOT_ENDPOINT_HOSTNAME,  sizeof(global_endpoint_host) );
 
-    if (   get_json_and_parse_v3(processor, "time", "") )  
+    if (   get_json_and_parse_v3(processor, "time", "timezone=" + String(tickerConfig.clock_timezone)) )  
     {
         Sprintln(F("Got time from primary endpoint."));
-        processor.update(unix_timestamp, gmt_offset);
+        processor.update(unix_timestamp, clockMainOffset);
 
         // Set the global time via TimeLib.h, set to GMT
-        setTime(unix_timestamp);
+        clockMain.setTime(unix_timestamp);
 
         // Set the offset for this TZ
-        adjustTime(gmt_offset);
+        clockMain.setOffset(clockMainOffset);
 
         return true;
+    
     }
 
-    strncpy(global_endpoint_host,   SEC_IOT_ENDPOINT_HOSTNAME,  sizeof(global_endpoint_host) );
+      strncpy(global_endpoint_host,   SEC_IOT_ENDPOINT_HOSTNAME,  sizeof(global_endpoint_host) );
 
-    if (   get_json_and_parse_v3(processor, "time", ""))  
-    {
-        Sprintln(F("Got time from secondary endpoint."));
-        processor.update(unix_timestamp, gmt_offset);
+      if (   get_json_and_parse_v3(processor, "time", "timezone=" + String(tickerConfig.clock_timezone)))  
+      {
+          Sprintln(F("Got time from secondary endpoint."));
+          processor.update(unix_timestamp, clockMainOffset);
 
-        // Set the global time via TimeLib.h, set to GMT
-        setTime(unix_timestamp);
+          // Set the global time via TimeLib2.h, set to GMT
+          clockMain.setTime(unix_timestamp);
 
-        // Set the offset for this TZ
-        adjustTime(gmt_offset);
+          // Set the offset for this TZ
+          clockMain.setOffset(clockMainOffset);
 
-        return true;
-    }
+          return true;
+      }
+
+ 
 
     return false;
 
@@ -1192,54 +1319,3 @@ bool get_json_and_parse_v3(JsonProcessor &parser, const String& action_str, cons
     }
 }
 
-
-/********************************** DATE/TIME HELPER UTILS  *************************************/
-// NOTE: Ensure destination buffer at least 12 characters.
-void getFormattedTimeToCharBuffer(char * parolaBuffer)
-{
-  /*
-    unsigned long rawTime = now();
-    int hours             = (rawTime % 86400L) / 3600;
-    int minutes           = (rawTime % 3600)   / 60;
-  */
-  char am_or_pm[3];
-
-  // Convert to 12 hour time
-  if (isAM() == false)
-  {
-    strcpy(am_or_pm, "PM");
-  }
-  else
-  {
-    strcpy(am_or_pm, "AM");
-  }
-
-  sprintf((char *)parolaBuffer, "%02d:%02d %s",  hourFormat12(), minute(), am_or_pm );
-
-} // end getFormattedTimeToCharBuffer
-
-// NOTE: Ensure destination buffer at least 12 characters.
-void getFormattedDateToCharBuffer(char * parolaBuffer)
-{
-
-  // Weird duplication issue when using the Time library character pointers!?
-  // Answer: Because these functions return just a pointer to the same buffer, and sprintf
-  // runs both then attempts to substitute. Unfortunately only the last operation is then in
-  // the buffer, so we need to duplicate.
-  // https://forum.arduino.cc/index.php?topic=367763.0
-
-  /*
-    Sprintln("The current weekday is: " + String(dayStr(weekday())));
-    Sprintln("The current weekday number is: " + String(weekday()));
-    Sprintln(dayStr(weekday()));
-    Sprintln(day());
-    Sprintln(monthShortStr(month()));
-  */
-
-  //sprintf((char *)parolaBuffer, "%s %d %s %s",  dayStr(weekday()), day(), monthShortStr(month()));
-
-  char weekday_str[6] = { '\0' };
-  strcpy(weekday_str, dayShortStr(weekday()));
-  sprintf((char *)parolaBuffer, "%s %d %s",  weekday_str, day(),  monthShortStr(month()) );
-
-} // end getFormattedDateToCharBuffer

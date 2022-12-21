@@ -1,118 +1,17 @@
 #include "TickerConfigStructs.hpp"
 #include "TickerDebug.hpp"
-#include <TimeLib.h>          // For Message Management //http://www.arduino.cc/playground/Code/Time - https://github.com/PaulStoffregen/Time - Known issue with ESP8266 -> http://forum.arduino.cc/index.php?topic=96891.30
+
+/* 
+ * For Message Management //http://www.arduino.cc/playground/Code/Time - https://github.com/PaulStoffregen/Time - 
+ * Known issue with ESP8266 -> http://forum.arduino.cc/index.php?topic=96891.30
+ */
+#include <TimeLib2.hpp>          
 
 extern void checkForFirmwareUpdate(); // defined in the main .cpp file
+extern TimeLib2 clockMain;
+
 
 /************************************* EEPROM UTILS  ****************************************/
-
-void EEPROM_SystemConfig_Start() // function assume EEPROM.begin has been called
-{
- 
-  // Load System Config into struct
-  EEPROM.get(0, systemConfig);  // global
-
-  Sprintln("The device ID currently is: " + String(systemConfig.device_id));
- 
-  Sprintln("Performing EEPROM System Configuration Check...");
-  if (systemConfig.configured_flag != DEVICE_IS_CONFIGURED) 
-  {
-
-    Sprintln("Device is not configured. Setting up.");
-
-    // Start afresh
-    SystemConfig newConfig;   
-
-    // After MUCH PAIN it was discovered that you need to flush out the entire struct 
-    // as when uninitialised, there's no control on what you will get.
-    // https://www.go4expert.com/forums/default-values-c-struct-fields-t8264/
-    newConfig = { 0 };  
-
-    // Set to configured
-    newConfig.configured_flag = DEVICE_IS_CONFIGURED;
-
-    // Make a fresh copy of the endpoint address
-    //strcpy(newConfig.endpoint_1_host,   PRI_IOT_ENDPOINT_HOSTNAME );
-    //strcpy(newConfig.endpoint_1_path,   DEFAULT_IOT_ENDPOINT_PATH );    
-
-    //strcpy(newConfig.endpoint_2_host,   BACKUP_IOT_ENDPOINT_HOST );
-    //strcpy(newConfig.endpoint_2_path,   BACKUP_IOT_ENDPOINT_HOST );    
-
-
-    // Use system chip ID and store has string of hex
-    sprintf( newConfig.device_id, "%X", system_get_chip_id() );
-
-    EEPROM.put(eeprom_addr_SystemConfig, newConfig);
-    EEPROM.commit(); // very important
-
-    // Now refresh the current in-memory config
-    systemConfig = newConfig;
-    
-    Sprintln("The Device ID is: " + String(systemConfig.device_id));               
-    
-  } // basic config setup
-
-} // end System Config Start
-
-
-void EEPROM_TickerConfig_Start (bool flush = false) // function assume EEPROM.begin has been called
-{
- 
-  // Load Ticker Config into struct
-  EEPROM.get(eeprom_addr_TickerConfig, tickerConfig);  // global
-
- 
-  Sprintln("Performing EEPROM Ticker Configuration Check...");
-  if (tickerConfig.configured_flag != DEVICE_IS_CONFIGURED || flush == true) 
-  {
-
-    // Start afresh
-    TickerConfig newConfig;   
-
-    // After MUCH PAIN it was discovered that you need to flush out the entire struct 
-    // as when uninitialised, there's no control on what you will get.
-    // https://www.go4expert.com/forums/default-values-c-struct-fields-t8264/
-    newConfig = { 0 };  
-
-    // Set to configured
-    newConfig.configured_flag  = DEVICE_IS_CONFIGURED;
-
-    strncpy(newConfig.clock_timezone, "Europe/London", sizeof(newConfig.clock_timezone));
-    strncpy(newConfig.weather_city_name, "London,UK", sizeof(newConfig.weather_city_name) );
-
-    // Make a fresh copy of the default password
-    //strcpy(newConfig.login_password,  DEFAULT_DEVICE_PASSWORD );   
-
-    // Set the default Crypto Tickers and the News Feeds
-   // newConfig.ticker_mode      = TICKER_MODE_TOP;    // by default use pull what is the top marketcap
-    strcpy(newConfig.crypto_1,  DEFAULT_TICKER_1 );   
-    strcpy(newConfig.crypto_2,  DEFAULT_TICKER_2 );       
-    strcpy(newConfig.crypto_3,  DEFAULT_TICKER_3 );  
-
-    strcpy(newConfig.stock_1,   DEFAULT_STONK_1 );      
-
-    strcpy(newConfig.news_codes,  DEFAULT_NEWS_CODES ); 
-    newConfig.news_limit = DEFAULT_NEWS_LIMIT;
-
-    // Not used :-)
-    strcpy(newConfig.login_username, "USERNAME"); 
-
-    // Countdown is disabled by default
-    newConfig.ticker_content_freq_countdown = TICKER_CONTENT_FREQ_NEVER;
-
-    EEPROM.put(eeprom_addr_TickerConfig, newConfig);
-    EEPROM.commit(); // very important
-
-    // Now refresh the current in-memory config
-    tickerConfig = newConfig;
-    //EEPROM.get(0, tickerConfig); // Let's hope what's in eeprom is in the right order for the struct.
-
-    Sprintln("Generated and wrote clean ticker configuration.");               
-    
-  } // basic config setup
-  
-} // ticker configuration start
-
 // Flush the while EEPROM section
 void EEPROM_clear_all()
 {
@@ -122,17 +21,109 @@ void EEPROM_clear_all()
   for (unsigned int i = 0 ; i < EEPROM.length() ; i++) {
     EEPROM.write(i, 0);
   }
-  EEPROM.end(); // very important
+  EEPROM.commit();
 }
 
-void EEPROM_clear_TickerConfig()
+
+void EEPROM_SystemConfig_Start() // function assume EEPROM.begin has been called
 {
-  Sprintln("EEPROM_clear_TickerConfig"); // per: http://esp8266.github.io/Arduino/versions/2.0.0/doc/libraries.html
-  EEPROM.begin(EEPROM_BYTES_RESERVE); // reserve memory for EEPROM
-  EEPROM_TickerConfig_Start(true);    // flush
-  EEPROM.end(); // very important
-}
 
+  // Load System Config into struct
+  EEPROM.get(0, systemConfig);  // global
+
+  Sprintln("Device ID: " + String(systemConfig.device_id));
+
+  Sprintln("Performing EEPROM System Configuration Check...");
+  if (systemConfig.config_version == SYSTEM_CONFIG_VER) return;
+  
+  Sprintln("System configuration invalid. Creating.");
+
+  EEPROM_clear_all();
+
+  // Start afresh
+  SystemConfig newConfig;   
+
+  // After MUCH PAIN it was discovered that you need to flush out the entire struct 
+  // as when uninitialised, there's no control on what you will get.
+  // https://www.go4expert.com/forums/default-values-c-struct-fields-t8264/
+  newConfig = { 0 };  
+
+  // Set to configured
+  newConfig.config_version = SYSTEM_CONFIG_VER;
+
+  // Use system chip ID and store has string of hex
+  sprintf( newConfig.device_id, "%X", system_get_chip_id() );
+
+  EEPROM.put(eeprom_addr_SystemConfig, newConfig);
+  EEPROM.commit(); // very important
+
+  // Now refresh the current in-memory config
+  systemConfig = newConfig;
+  
+  Sprintln("Generated Device ID: " + String(systemConfig.device_id));               
+    
+
+} // end System Config Start
+
+
+void EEPROM_TickerConfig_Start (bool flush = false) // function assume EEPROM.begin has been called
+{
+  // Load Ticker Config into struct
+  EEPROM.get(eeprom_addr_TickerConfig, tickerConfig);  // global
+ 
+  Sprintln("Performing EEPROM Ticker Configuration Check...");
+
+
+  if ( (tickerConfig.config_version == USER_CONFIG_VER) && (flush == false) ) return;   
+
+  Sprintln("User configuration invalid. Creating.");
+
+
+  // Start afresh
+  TickerConfig newConfig;   
+
+  // After MUCH PAIN it was discovered that you need to flush out the entire struct 
+  // as when uninitialised, there's no control on what you will get.
+  // https://www.go4expert.com/forums/default-values-c-struct-fields-t8264/
+  newConfig = { 0 };  
+
+  // Set to configured
+  newConfig.config_version  = USER_CONFIG_VER;
+
+  strncpy(newConfig.clock_timezone, "Europe/London", sizeof(newConfig.clock_timezone));
+  strncpy(newConfig.weather_city_name, "London,UK", sizeof(newConfig.weather_city_name) );
+
+  // Make a fresh copy of the default password
+  //strcpy(newConfig.login_password,  DEFAULT_DEVICE_PASSWORD );   
+
+  // Set the default Crypto Tickers and the News Feeds
+  // newConfig.ticker_mode      = TICKER_MODE_TOP;    // by default use pull what is the top marketcap
+  strcpy(newConfig.crypto_1,  DEFAULT_TICKER_1 );   
+  strcpy(newConfig.crypto_2,  DEFAULT_TICKER_2 );       
+  strcpy(newConfig.crypto_3,  DEFAULT_TICKER_3 );  
+
+  strcpy(newConfig.stock_1,   DEFAULT_STONK_1 );      
+
+  strcpy(newConfig.news_codes,  DEFAULT_NEWS_CODES ); 
+  newConfig.news_limit = DEFAULT_NEWS_LIMIT;
+
+  // Not used :-)
+  strcpy(newConfig.login_username, "USERNAME"); 
+
+  // Countdown is disabled by default
+  newConfig.ticker_content_freq_countdown = TICKER_CONTENT_FREQ_NEVER;
+
+  EEPROM.put(eeprom_addr_TickerConfig, newConfig);
+  EEPROM.commit(); // very important
+
+  // Now refresh the current in-memory config
+  tickerConfig = newConfig;
+  //EEPROM.get(0, tickerConfig); // Let's hope what's in eeprom is in the right order for the struct.
+
+         
+
+  
+} // ticker configuration start
 
 
 // We only do this ONCE when we've got the city id from Open Weather Maps
@@ -154,18 +145,6 @@ void EEPROM_cache_weather_city_id(char *weather_city_id, int size) // assume EEP
      EEPROM.end(); // very important    
 }
 
-// Only done when config is changed / first load
-void EEPROM_cache_gmt_offset() // assume EEPROM begin has NOT been called
-{
-     tickerConfig._tz_gmt_offset = gmt_offset;
-     EEPROM.begin(EEPROM_BYTES_RESERVE); // reserve memory for EEPROM
-     EEPROM.put(eeprom_addr_TickerConfig, tickerConfig);  // Update the config
-     EEPROM.end(); // very important
-     Sprintln("Wrote new gmt offset to eeprom.");    
-}
-
-
-
 // Assuming EEPROM is pen at the moment
 void EEPROM_SystemConfig_UpdateLastFirmwareCheckTime()
 {
@@ -174,7 +153,7 @@ void EEPROM_SystemConfig_UpdateLastFirmwareCheckTime()
      */
 
      // Refer to TimeLib.h - 'now()' returns the current time as seconds since Jan 1 1970 
-     systemConfig.last_firmware_check_time_t  = now(); 
+     systemConfig.last_firmware_check_time_t  = clockMain.getEpochSecond(); 
      //systemConfig.filesystem_needs_update     = false;
 
      Sprint("Updating last firmware check time to: ");
@@ -233,8 +212,12 @@ void HTTPGetConfigJSONHandler()
         "{"
         "\"input_owner_name\":\""         + String(tickerConfig.owner_name)         + "\","          
         "\"input_weather_city_name\":\""  + String(tickerConfig.weather_city_name)  + "\","    
-        "\"input_weather_city_id\":\""    + String(tickerConfig.weather_city_id)    + "\","            
+        "\"input_weather_city_id\":\""    + String(tickerConfig.weather_city_id)    + "\","    
+
         "\"input_timezone\":\""           + String(tickerConfig.clock_timezone)     + "\","    
+        "\"input_timezone_2\":\""         + String(tickerConfig.clock_2_timezone)     + "\","                    
+        "\"input_timezone_3\":\""         + String(tickerConfig.clock_3_timezone)     + "\","            
+
         "\"input_wakeup_time\":\""        + String(input_wakeup_time)               + "\","              
         "\"input_sleep_time\":\""         + String(input_sleep_time)                + "\","                       
         "\"input_crypto_1\":\""           + String(tickerConfig.crypto_1) + "\","                     
@@ -288,10 +271,16 @@ void HTTPConfigSubmitHandler() // Handler
 
       newConfig = { 0 }; // Start Afresh
 
+      newConfig.config_version = USER_CONFIG_VER;
+
       // Copy char array length MINUS ONE due to the terminating \0 required
       webServer.arg("input_owner_name")             .toCharArray(newConfig.owner_name,          sizeof(newConfig.owner_name));
       webServer.arg("input_weather_city_name")      .toCharArray(newConfig.weather_city_name,   sizeof(newConfig.weather_city_name));
+      
       webServer.arg("input_timezone")               .toCharArray(newConfig.clock_timezone,     sizeof(newConfig.clock_timezone));
+      webServer.arg("input_timezone_2")               .toCharArray(newConfig.clock_2_timezone,     sizeof(newConfig.clock_2_timezone));
+      webServer.arg("input_timezone_3")               .toCharArray(newConfig.clock_3_timezone,     sizeof(newConfig.clock_3_timezone));
+
       //webServer.arg("input_ticker_currency")        .toCharArray(newConfig.ticker_currency,     7);
       //newConfig.ticker_mode = webServer.arg("input_ticker_mode").toInt();
 
@@ -358,16 +347,7 @@ void HTTPConfigSubmitHandler() // Handler
       countdown_name.toCharArray(newConfig.countdown_name,        63);
 
       newConfig.countdown_datetime = webServer.arg("input_countdown_datetime").toInt();
-
-
-
-      // Current timezone offset cache
-      newConfig._tz_gmt_offset = -1;
       
-      // Set to configured
-      newConfig.configured_flag = DEVICE_IS_CONFIGURED;
-          
-
       Sprintln("Reserving EEPROM"); // per: http://esp8266.github.io/Arduino/versions/2.0.0/doc/libraries.html
       EEPROM.begin(EEPROM_BYTES_RESERVE); // reserve memory for EEPROM
 
@@ -389,7 +369,7 @@ void HTTPConfigSubmitHandler() // Handler
       // Need to reset the update timers, so the main loop gets the latest server data again!
       //reload_required = true;
 
-      delay(1000); 
+      delay(500); 
       ESP.restart();   // clear, wait, restart!
 
       
@@ -432,17 +412,9 @@ void HTTPConfigResetSubmitHandler()
     
     webServer.send(200, "text/html", F("<html><head><title>Reset</title><script>setTimeout(function () { window.location.href = \"./\"; }, 15000);</script></head><body><h2>Configuration has been reset!</h2><h3>Device Restarting - PLEASE WAIT for this page to refresh!</h3></body></html>"));       //Response to the HTTP request       
 
-    String nuke =  webServer.arg("nuke");
-
-    if ( nuke != "" )
-    {
-      EEPROM_clear_all(); // even wipe the system config with our hidden ID!
-    }
-    else
-    { 
-      EEPROM_clear_TickerConfig(); 
-    }
-    
+    //String nuke =  webServer.arg("nuke");
+    EEPROM_clear_all(); // even wipe the system config with our hidden ID!
+ 
     delay(1000); 
     ESP.restart();   // clear, wait, restart!
              
@@ -543,7 +515,7 @@ void HTTPMessageSubmitHandler()
     else // populate the new message
     {
       newMessage.message_last_displayed = 0;
-      newMessage.message_timestamp      = now();
+      newMessage.message_timestamp      = clockMain.getEpochSecond();
       newMessage.message_length         = message.length();
       message.toCharArray(newMessage.message, 251);       // 250 of user characters + 1 for the terminating \0
 

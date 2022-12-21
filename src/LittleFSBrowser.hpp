@@ -44,7 +44,7 @@ bool handleFileRead(String path) {
   }
 
   if (path.endsWith("/")) {
-    path += "index.htm";
+    path += "index.html";
   }
 
   String contentType;
@@ -54,10 +54,21 @@ bool handleFileRead(String path) {
     contentType = getContentType(path);
   }
 
+  // Prioritise .gz (gzip) version if it exists
+  if ( !path.endsWith(".gz") )
+  {
+    if (fileSystem->exists(path + ".gz")) {
+      // File not found, try gzip version
+      path = path + ".gz";
+    }
+  }
+/*
   if (!fileSystem->exists(path)) {
     // File not found, try gzip version
     path = path + ".gz";
   }
+  */
+ 
   if (fileSystem->exists(path)) {
     File file = fileSystem->open(path, "r");
     if (webServer.streamFile(file, contentType) != file.size()) {

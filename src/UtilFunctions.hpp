@@ -1,5 +1,56 @@
 #pragma once
 
+/********************************** DATE/TIME HELPER UTILS  *************************************/
+// NOTE: Ensure destination buffer at least 12 characters.
+void getFormattedTimeToCharBuffer(char * parolaBuffer, TimeLib2 &clockInstance)
+{
+  /*
+    unsigned long rawTime = now();
+    int hours             = (rawTime % 86400L) / 3600;
+    int minutes           = (rawTime % 3600)   / 60;
+  */
+  char am_or_pm[3];
+
+  // Convert to 12 hour time
+  if (clockInstance.isAM() == false)
+  {
+    strcpy(am_or_pm, "PM");
+  }
+  else
+  {
+    strcpy(am_or_pm, "AM");
+  }
+
+  sprintf((char *)parolaBuffer, "%02d:%02d %s",  clockInstance.hourFormat12(), clockInstance.minute(), am_or_pm );
+
+} // end getFormattedTimeToCharBuffer
+
+// NOTE: Ensure destination buffer at least 12 characters.
+void getFormattedDateToCharBuffer(char * parolaBuffer, TimeLib2 &clockInstance)
+{
+
+  // Weird duplication issue when using the Time library character pointers!?
+  // Answer: Because these functions return just a pointer to the same buffer, and sprintf
+  // runs both then attempts to substitute. Unfortunately only the last operation is then in
+  // the buffer, so we need to duplicate.
+  // https://forum.arduino.cc/index.php?topic=367763.0
+
+  /*
+    Sprintln("The current weekday is: " + String(dayStr(weekday())));
+    Sprintln("The current weekday number is: " + String(weekday()));
+    Sprintln(dayStr(weekday()));
+    Sprintln(day());
+    Sprintln(monthShortStr(month()));
+  */
+
+  //sprintf((char *)parolaBuffer, "%s %d %s %s",  dayStr(weekday()), day(), monthShortStr(month()));
+
+  char weekday_str[6] = { '\0' };
+  strcpy(weekday_str, dayShortStr(clockInstance.weekday()));
+  sprintf((char *)parolaBuffer, "%s %d %s",  weekday_str, clockInstance.day(),  monthShortStr(clockInstance.month()) );
+
+} // end getFormattedDateToCharBuffer
+
 
 /************************************* CRYPTO CODE CHECK ****************************************/
 bool is_valid_symbol (char *symbol) {

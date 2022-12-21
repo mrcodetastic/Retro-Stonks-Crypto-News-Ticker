@@ -4,7 +4,9 @@
 //#include <TickerData.hpp>
 #include <list>
 #include <string>
-#include <TimeLib.h>
+#include <TimeLib2.hpp>
+
+//extern TimeLib2 clockMain;
 
 struct TickerInstance
 {
@@ -235,15 +237,15 @@ class ForecastWeatherProcessor : public JsonProcessor {
                     //
                     // Now check to see if we want to process and store this weather forecast?
                     //
-                    int forecast_day_of_week           = weekday(weather.datetime_tzadjusted);   // the weekday (Sunday is day 1) 
-                    int forecast_day_of_month          = day(weather.datetime_tzadjusted);      // the day of month (first day of the month is 1, not 0 :-) )
+                    int forecast_day_of_week           = clockMain.weekday(weather.datetime_tzadjusted);   // the weekday (Sunday is day 1) 
+                    int forecast_day_of_month          = clockMain.day(weather.datetime_tzadjusted);      // the day of month (first day of the month is 1, not 0 :-) )
 
                     // Get the first forecast of the afternoon each day, and not for the remainder of today.
                     
-                    if ( day() == forecast_day_of_month ) {
+                    if ( clockMain.day() == forecast_day_of_month ) {
                         Sprintln (F("Skipping forecast: Current day"));    
                         continue;
-                    } else if ( isAM(weather.datetime_tzadjusted) ) {
+                    } else if ( clockMain.isAM(weather.datetime_tzadjusted) ) {
                         Sprintln ( F("Skipping forecast: Morning time") ); 
                         continue;
                     } else if ( previous_forecast_day_of_month == forecast_day_of_month ) {
@@ -259,7 +261,7 @@ class ForecastWeatherProcessor : public JsonProcessor {
 
                     char temp[128] = {0};  // hack   
                     std::string s;
-                    if ( (day() + 1) ==  forecast_day_of_month ) { // is the forecast for tomrrow?
+                    if ( (clockMain.day() + 1) ==  forecast_day_of_month ) { // is the forecast for tomrrow?
                         snprintf_P(temp, sizeof(temp), "Tomorrow \x10 %s and %d\xB0.", weather.description, weather.temp_now);
                     } else {
                         snprintf_P(temp, sizeof(temp), "%s \x10 %s and %d\xB0.", dayStr(forecast_day_of_week), weather.description, weather.temp_now);    
@@ -475,7 +477,8 @@ class TimeProcessor : public JsonProcessor {
 
     private:
         time_t _offset    = 0;
-        time_t _timestamp = 0;         
+        time_t _timestamp = 0;   
+       // const char * _timezone_name[64];
 
     public:
 
@@ -501,9 +504,11 @@ class TimeProcessor : public JsonProcessor {
             int cod = doc["cod"];
             if (!cod) return false;
 
-            _timestamp  = doc["data"]["timestamp"];
-            _offset     = doc["data"]["timestamp_offset"];
+            _timestamp          = doc["data"]["timestamp"];
+            _offset             = doc["data"]["timestamp_offset"];
 
+            // The PHP should return a timezone name as well. Europe/London should be 'London'.
+           // _timezone_name      = doc["data"]["timezone_name"];
 
             return true;            
 

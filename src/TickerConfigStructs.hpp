@@ -1,14 +1,16 @@
 #ifndef TICKER_CONFIG_H
 #define TICKER_CONFIG_H
-#include <TimeLib.h>
+#include <TimeLib2.hpp>
 
 #define EEPROM_BYTES_RESERVE 2048
 
 /********************************************* CONFIG CONSTANTS **********************************************/
 
 // Config definitions
-#define DEVICE_IS_CONFIGURED 5            // Change this every time the format of the struct changes
+#define SYSTEM_CONFIG_VER  2            // Change this every time the format of the struct changes
+#define USER_CONFIG_VER    2              // Change this every time the format of the struct changes
 
+// User config items
 #define BRIGHTNESS_MODE_ADAPTIVE 0
 #define BRIGHTNESS_MODE_MIN 1
 #define BRIGHTNESS_MODE_MAX 2
@@ -65,18 +67,19 @@ const char* IOT_ENDPOINT_PATH = "/iot/ticker/";
 
 // For EEPROM address writing, memory position, do not change!!
 static const int eeprom_addr_SystemConfig = 0;
-static const int eeprom_addr_TickerConfig = 400; // according to sizeof(SystemConfig) it's 312 bytes, we'll leave a bit to spare
+static const int eeprom_addr_TickerConfig = 128; 
 
 
 
 // System config that isn't overwritten constantly
 struct SystemConfig // 312 bytes
 {
-  int       configured_flag; // Some random value  
   char      device_id[32];
 
   time_t    last_firmware_check_time_t;
   bool      filesystem_needs_update; // Is the FS image stale?  
+
+  int config_version;  
 
 };
 
@@ -84,10 +87,12 @@ struct SystemConfig // 312 bytes
 // https://www.arduino.cc/en/Reference/EEPROMPut
 struct TickerConfig  // aprox 480 bytes in size using sizeof
 {
-  unsigned int configured_flag; // Some random value
-
   char owner_name[64];   
+
   char clock_timezone[64];
+  char clock_2_timezone[64];
+  char clock_3_timezone[64];
+
   char login_username[9];
   char login_password[9];
 
@@ -136,16 +141,13 @@ struct TickerConfig  // aprox 480 bytes in size using sizeof
   unsigned int device_awake_weekends;  
   unsigned int wake_sleep_mode;
 
-  // Depreciated
-  unsigned int rgb_leds_mode;    
-
-  // Cached Stuff
-  long _tz_gmt_offset;
-
   // Countdown
   unsigned int ticker_content_freq_countdown;     
   char countdown_name[64];
   unsigned long countdown_datetime;
+
+  int config_version;
+
 };
 
 // In memory struct only, not EEPROM

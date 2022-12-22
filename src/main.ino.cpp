@@ -252,7 +252,7 @@ bool atDetect(IPAddress& softapIP)
   // and then configure the proper WiFi accesspoint for the device to connect to.
   //Serial.println("Captive portal started, SoftAP IP:" + softapIP.toString());
   Sprintln(F("Captive Portal started."));
-  printTextOrScrollLeft("************ No WiFi! Please connect to 'RetroTicker' on your phone to configure. ************", false, 25);  
+  printTextOrScrollLeft("****** No WiFi! Please connect to WiFi 'RetroTicker' with key '12345678' to configure. ******", false, 25);  
   printTextOrScrollLeft("Configure WiFi", true);  
   return true;
 }

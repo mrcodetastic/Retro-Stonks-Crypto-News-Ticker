@@ -392,8 +392,8 @@ void setup()
   show_starting_greeting();
 
   Parola.displayClear();
-  sprintf_P(parolaBuffer, "Access this device on your local network by going to   http://%d.%d.%d.%d", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3]);
-  printTextOrScrollLeft(parolaBuffer, false, 25);  
+  sprintf_P(parolaBuffer, "Access this device on your local network @ http://%d.%d.%d.%d", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3]);
+  printTextOrScrollLeft(parolaBuffer, false, 20);  
   printTextOrScrollLeft("Loading...");
 
 } // end Setup

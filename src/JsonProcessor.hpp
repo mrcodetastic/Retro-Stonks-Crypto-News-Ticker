@@ -450,7 +450,9 @@ class TickerProcessor : public JsonProcessor {
 
 
                     char temp[128];  // hack  
-                    snprintf_P(temp, sizeof(temp), "%s \x7 %s%0.2lf%s  %s  %0.2lf%%", ticker.name, ticker.parola_currency_code, ticker.price_reporting_ccy, "", ticker.parola_upordown_code, ticker.percent_change_24h); 
+                    // Refer to https://github.com/MajicDesigns/MD_MAX72XX/blob/main/src/MD_MAX72xx_font.cpp for the hex values
+                    // Currently use bullet point then right arrow.
+                    snprintf_P(temp, sizeof(temp), "\x7 %s \x16 %s%0.2lf%s  %s  %0.2lf%%", ticker.name, ticker.parola_currency_code, ticker.price_reporting_ccy, "", ticker.parola_upordown_code, ticker.percent_change_24h); 
                     Sprintln(temp); 
 
                     if (crypto_mode) {

@@ -1,41 +1,37 @@
 <!doctype html>
+<!--
+
+	██╗  ██╗███████╗██╗     ██╗      ██████╗ ██╗
+	██║  ██║██╔════╝██║     ██║     ██╔═══██╗██║
+	███████║█████╗  ██║     ██║     ██║   ██║██║
+	██╔══██║██╔══╝  ██║     ██║     ██║   ██║╚═╝
+	██║  ██║███████╗███████╗███████╗╚██████╔╝██╗
+	╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝ ╚═════╝ ╚═╝
+												
+	Nice of you to want to view my source code... 
+								Don't be naughty.
+	
+-->	
 <html lang="en">
   <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-	<!--
-
-		██╗  ██╗███████╗██╗     ██╗      ██████╗ ██╗
-		██║  ██║██╔════╝██║     ██║     ██╔═══██╗██║
-		███████║█████╗  ██║     ██║     ██║   ██║██║
-		██╔══██║██╔══╝  ██║     ██║     ██║   ██║╚═╝
-		██║  ██║███████╗███████╗███████╗╚██████╔╝██╗
-		╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝ ╚═════╝ ╚═╝
-													
-		Nice of you to want to view my source code... 
-									Don't be naughty.
-		
-	-->											
+	<link id="favicon" rel="icon" type="image/x-icon" href="favicon.ico">				
 	
 	<!-- Bootstrap 4.1.1 Reset CSS -->
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" crossorigin="anonymous">
 	
-	<!-- Bootstrap 4.1.1 Reset CSS on device as backup -->
-	<link rel="stylesheet" href="bootstrap.min.css" crossorigin="anonymous">
-
-	
-	<!-- Jquery 3.3.1 -->
-	<script src="./jquery-3.3.1.min.js"></script>		
-
-	<link id="favicon" rel="icon" type="image/x-icon" href="favicon.ico">
-		
+	<!-- Jquery Javascript -->
+	<script
+  	src="https://code.jquery.com/jquery-3.6.3.min.js"
+  	integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU="
+  	crossorigin="anonymous"></script>
 
 	<!-- Flat Picker -->
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-	<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-		
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css" integrity="sha512-MQXduO8IQnJVq1qmySpN87QQkiR1bZHtorbJBD0tzy7/0U9+YIC93QWHeGTEoojMVHWWNkoCp8V6OzVSYrX0oQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js" integrity="sha512-K/oyQtMXpxI4+K0W7H25UopjM8pzq0yrVdFdG21Fh5dBe91I40pDd9A4lzNlHPHBIP2cwZuoxaUSX0GJSObvGA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
 	<!-- Loading Screen -->
 	<style>
 		
@@ -831,7 +827,7 @@
 			
 	<!-- Start news feed config - Ensure javascript and proxy is updated with codes as well -->
 	<div class="form-group">		
-		<label for="input_news_codes" class="main">News Categories of Interest</label><br />
+		<label for="input_news_codes" class="main">News Feeds of interest</label><br />
 		<!--
 		<div class="form-check form-check-inline">
 			<input class="form-check-input" type="checkbox" id="feed_CB" value="CB" >
@@ -1043,7 +1039,7 @@
 			{
 				checked_str = "checked";
 			}
-			var checkbox_html = '<div class="form-check form-check-inline"><input onclick="update_news_feed_hidden_input();" class="form-check-input" type="checkbox" id="' + checkbox_id +'" value="' + feed_codes[i] + '" ' + checked_str +'><label class="form-check-label" for="' + checkbox_id + '">'+ feed_names[i] +'</label></div>';
+			var checkbox_html = '<div class="form-check"><input onclick="update_news_feed_hidden_input();" class="form-check-input" type="checkbox" id="' + checkbox_id +'" value="' + feed_codes[i] + '" ' + checked_str +'><label class="form-check-label" for="' + checkbox_id + '">'+ feed_names[i] +'</label></div>';
 
 			$( "#news_checkbox_html" ).append( checkbox_html );
 		}

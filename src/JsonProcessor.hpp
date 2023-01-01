@@ -331,7 +331,7 @@ class NewsProcessor : public JsonProcessor {
             {
                 const char* headline = item["title"];
 
-                const char* feed = item["feed_code"];
+                //const char* feed = item["feed_code"];
 
                 if (headline)
                 {

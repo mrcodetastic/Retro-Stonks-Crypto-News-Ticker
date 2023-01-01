@@ -64,6 +64,10 @@ void waitForZoneAnimationComplete()
 {
     while ( !allZoneAnimationsCompleted() )
     {
+          // Do this here as well.
+          webServer.handleClient();       // Handle any requests as they come.
+          Portal.handleRequest();   // Need to handle AutoConnect menu.      
+
           Parola.displayAnimate();
 
 #if defined(ESP8266)          

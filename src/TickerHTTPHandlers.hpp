@@ -256,10 +256,9 @@ void HTTPGetConfigJSONHandler()
         "}";
 
     // Send it.
-    webServer.send(200, "text/json", json_output); // otherwise, respond with a 404 (Not Found) error
+    webServer.send(200, "application/json", json_output); // otherwise, respond with a 404 (Not Found) error
 
 } // return a configuration string
-
 
 
 
@@ -621,3 +620,31 @@ void EEPROM_SerialDebug()
 */
 
 }
+
+
+void HTTPDisplayOnOffHandler()
+{
+    displayOn = !displayOn;
+
+    // Send it.
+    handleFileRead("/success.html");
+
+
+} // return a configuration string
+
+
+
+void HTTPDisplayStateHandler()
+{
+    String json_output;
+
+    if ( displayOn )
+    {
+        webServer.send(200, "application/json", F("{\"display_on\": true}")); // otherwise, respond with a 404 (Not Found) error
+    }
+    else
+    {
+        webServer.send(200, "application/json", F("{\"display_on\": false}")); // otherwise, respond with a 404 (Not Found) error      
+    }
+ 
+} // return a configuration string

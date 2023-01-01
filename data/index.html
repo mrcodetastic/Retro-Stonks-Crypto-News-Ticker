@@ -155,7 +155,9 @@
 	<div class="centered">
 	
 				<!--<div class="header">RetroTicker Menu</div>-->
-				
+
+				<button type="button" class="input button" onclick="window.location='/onoff';">Turn display <span id="on_off_text">OFF</span></button>
+						
 				<button type="button" class="input button" onclick="window.location='/message.html';">Display Message</button>
 				
 				<!--<button type="button" class="input button" onclick="window.location='/color';">Change LEDs</button> -->
@@ -165,6 +167,61 @@
 				<button type="button" class="input button" onclick="window.location='/config.html';">Configuration</button>
 	</div>
 	</div>
+
+
+  <script>
+
+			var getJSON = function(url, callback) {
+
+			var xmlhttprequest = new XMLHttpRequest();
+			xmlhttprequest.open('GET', url, true);
+			xmlhttprequest.responseType = 'json';
+
+			xmlhttprequest.onload = function() {
+
+				var status = xmlhttprequest.status;
+
+				if (status == 200) {
+					callback(null, xmlhttprequest.response);
+				} else {
+					callback(status, xmlhttprequest.response);
+				}
+			};
+
+				xmlhttprequest.send();
+			};
+
+			window.addEventListener('load', function() {
+
+			
+					getJSON('/state',  function(err, data) {
+
+					if (err != null) {
+
+						console.error(err);
+
+					} else {
+						var display = `display_on: ${data.display_on}`;
+						if (data.display_on == true)
+						{
+							console.log ("Changing display state button text to OFF toggle.");
+							document.getElementById("on_off_text").textContent="OFF";							
+						}
+						else
+						{
+							document.getElementById("on_off_text").textContent="ON";							
+						}
+					}
+						console.log(display);
+					});
+			
+				
+			}, false);			
+
+
+
+
+  </script>
 	
   </body>
 </html>

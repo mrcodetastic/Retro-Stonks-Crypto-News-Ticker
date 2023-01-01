@@ -119,6 +119,7 @@ bool  displayStateCompleted       = true;  // for multi-loop display
 time_t displayStateStartTS = 0;
 int  displayStateActivityStep    = 0;  // if the displayState has multiple parts
 unsigned int  tmp_counter = 0;
+bool displayOn = true;                  // User has reqested screen stay off?
 
 std::map<displayStates, displayState> userDisplayStates;
 std::map<displayStates, displayState>::iterator uds_it;
@@ -350,6 +351,8 @@ void setup()
  // webServer.on(F("/advanced"),         HTTPConfigAdvancedHandler);    // Flush or reset all configuation?
   //webServer.on(F("/advanced_submit"),  HTTPConfigAdvancedSubmitHandler);
   webServer.on(F("/update"),           HTTPUpdateHandler);
+  webServer.on(F("/onoff"),             HTTPDisplayOnOffHandler);
+  webServer.on(F("/state"),             HTTPDisplayStateHandler);
 
   // Final webserver catch-all
   webServer.onNotFound([]() {                              // If the client requests any URI
@@ -405,7 +408,12 @@ void determineNextDisplayState()
         time_t current_timestamp = clockMain.getEpochSecond();
 
         previousDisplayState = currentDisplayState; // record this
-
+/*
+        if (displayOn == false) {
+          currentDisplayState = BLACKOUT;
+          return;
+        }
+*/
         // https://stackoverflow.com/questions/26281979/c-loop-through-map
         uds_it = userDisplayStates.find(currentDisplayState);
 
@@ -557,19 +565,24 @@ void loop()
       adc_last_sampled_millisecond = current_millisecond;
     } // end ADC value check / check every second
 
-
-
-    // If we're still animating, then no action required.
+     // If we're still animating, then no action required.
     if ( !allZoneAnimationsCompleted() ) 
     {
       Parola.displayAnimate();
       return; // don't go any further from here
     }
 
-
     // We have finised the current display state (because some last more that one loop of parola.)
     if (displayStateCompleted) 
     {
+
+      // Display is off.
+      if (displayOn == false) {
+        Parola.displayClear();        
+        delay(500);
+        return;
+      }
+
       //Sprintln(F("Display State completed: So determining next displayState"));
       determineNextDisplayState();
 
@@ -657,7 +670,6 @@ void loop()
     // SO what do we do? We shouldn't have an active display
     if ( currentDisplayState == BLACKOUT)
            Parola.displayClear();
-
 
     //************************** CUSTOM MESSAGE ***************************/
     if ( customMessage.message_length != 0 ) { // we have a message

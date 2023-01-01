@@ -37,3 +37,11 @@ On first boot it will ask you to connect to the WiFi AP it creates, to configure
 ![Config Interface](media/config_5.jpg)
 
 
+## Construction
+Refer to the design folder for the laser cutting diagrams. The ESP8266 (in this case, a WeMos D1 Mini) is inside.
+
+![Back View](design/back_view.jpg)
+![Side View](design/side_view.jpg)
+
+
+

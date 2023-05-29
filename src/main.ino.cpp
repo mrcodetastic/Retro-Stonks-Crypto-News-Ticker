@@ -49,7 +49,7 @@ bool lfs_OK = false;
   #include <WebServer.h>
 #endif
 
-//#include <ElegantOTA.h>
+#include <ElegantOTA.h>
 #include <AutoConnect.h>
 //#include <ESP8266httpUpdate.h>  // For HTTP based remote firmware update
 //#include <ESP8266HTTPClient.h>  // For proxy connections instead of using WiFiclient directly
@@ -419,7 +419,7 @@ void setup()
   webServer.on(F("/reset_submit"),     HTTPConfigResetSubmitHandler);
  // webServer.on(F("/advanced"),         HTTPConfigAdvancedHandler);    // Flush or reset all configuation?
   //webServer.on(F("/advanced_submit"),  HTTPConfigAdvancedSubmitHandler);
-  webServer.on(F("/update"),           HTTPUpdateHandler);
+  //webServer.on(F("/update"),           HTTPUpdateHandler); // Now handelled by ElegantOTA!!
   webServer.on(F("/onoff"),             HTTPDisplayOnOffHandler);
   webServer.on(F("/state"),             HTTPDisplayStateHandler);
 
@@ -429,7 +429,7 @@ void setup()
       webServer.send(404, "text/plain", "404: Not Found"); // otherwise, respond with a 404 (Not Found) error
   });
 
-  //ElegantOTA.begin(&webServer);    // Start ElegantOTA
+  ElegantOTA.begin(&webServer);    // Start ElegantOTA
   webServer.begin();
 
   Sprintln(F(" * Getting Time From Internet Endpoint "));

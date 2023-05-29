@@ -335,7 +335,7 @@ class NewsProcessor : public JsonProcessor {
 
                 if (headline)
                 {
-                    Sprint(feed); Sprint(": ");
+                  //  Sprint(feed); Sprint(": ");
                     Sprintln(headline);
                     std::string tmp = "\x7 " + (std::string) headline;
                     NewsHeadlines_str.push_front(tmp);                       

@@ -25,11 +25,11 @@ void handleSerialRead()
 
         switch(incomingByte) {        
             case 'r':
-                ESP.reset();
+                ESP.restart();
                 break;
             case 'f':
                 EEPROM_clear_all();
-                ESP.reset();
+                ESP.restart();
                 break;
             case 'd':
                 EEPROM_SerialDebug();
@@ -44,14 +44,14 @@ void handleSerialRead()
                 //performFilesystemUpdate();
                 EEPROM_set_firmware_needs_update();
                 EEPROM_set_filesystem_needs_update(true);
-                ESP.reset();
+                ESP.restart();
                 break;
 
             case 'm':
                 Serial.print("Heap free:");
                 Serial.println(String(ESP.getFreeHeap(), DEC));
-                Serial.print("Stack free:");
-                Serial.println(String(ESP.getFreeContStack(), DEC));   
+//                Serial.print("Stack free:");
+//                Serial.println(String(ESP.getFreeContStack(), DEC));   
                 break;
 
             case 'l':

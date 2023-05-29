@@ -52,7 +52,12 @@ void EEPROM_SystemConfig_Start() // function assume EEPROM.begin has been called
   newConfig.config_version = SYSTEM_CONFIG_VER;
 
   // Use system chip ID and store has string of hex
+#if defined(ESP8266)  
   sprintf( newConfig.device_id, "%X", system_get_chip_id() );
+#else
+
+    sprintf( newConfig.device_id, "%X", esp_random() );
+#endif
 
   EEPROM.put(eeprom_addr_SystemConfig, newConfig);
   EEPROM.commit(); // very important
@@ -556,7 +561,7 @@ void HTTPUpdateHandler()
   EEPROM_set_firmware_needs_update();
   EEPROM_set_filesystem_needs_update(true);  
   delay(100);
-  ESP.reset();
+  ESP.restart();
 
   /*
   systemConfig.last_firmware_check_time_t = 0;
@@ -572,15 +577,16 @@ void HTTPUpdateHandler()
 void EEPROM_SerialDebug()
 {
  Serial.println();
-  Serial.print( F("Heap: ") ); Serial.println(system_get_free_heap_size());
+/*
   Serial.print( F("Boot Vers: ") ); Serial.println(system_get_boot_version());
   Serial.print( F("CPU: ") ); Serial.println(system_get_cpu_freq());
   Serial.print( F("SDK: ") ); Serial.println(system_get_sdk_version());
   Serial.print( F("Chip ID: ") ); Serial.println(system_get_chip_id());
   Serial.print( F("Flash ID: ") ); Serial.println(spi_flash_get_id());
-  Serial.print( F("Flash Size: ") ); Serial.println(ESP.getFlashChipRealSize());
+*/  
+//  Serial.print( F("Flash Size: ") ); Serial.println(ESP.getFlashChipRealSize());
   Serial.print( F("Sketch MD5: ") ); Serial.println(ESP.getSketchMD5());
-  Serial.print( F("Vcc: ") ); Serial.println(ESP.getVcc());
+  //Serial.print( F("Vcc: ") ); Serial.println(ESP.getVcc());
   Serial.println();
 
   Serial.print( F("Config: Owner Name:") ); Serial.println(tickerConfig.owner_name);

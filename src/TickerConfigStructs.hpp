@@ -7,8 +7,8 @@
 /********************************************* CONFIG CONSTANTS **********************************************/
 
 // Config definitions
-#define SYSTEM_CONFIG_VER  2            // Change this every time the format of the struct changes
-#define USER_CONFIG_VER    2              // Change this every time the format of the struct changes
+#define SYSTEM_CONFIG_VER  3             // Change this every time the format of the struct changes
+#define USER_CONFIG_VER    3              // Change this every time the format of the struct changes
 
 // User config items
 #define BRIGHTNESS_MODE_ADAPTIVE 0
@@ -65,12 +65,6 @@ const char* IOT_ENDPOINT_PATH = "/iot/ticker/";
 // http://www.cplusplus.com/forum/articles/10627/
 // https://stackoverflow.com/questions/228684/how-to-declare-a-structure-in-a-header-that-is-to-be-used-by-multiple-files-in-c
 
-// For EEPROM address writing, memory position, do not change!!
-static const int eeprom_addr_SystemConfig = 0;
-static const int eeprom_addr_TickerConfig = 128; 
-
-
-
 // System config that isn't overwritten constantly
 struct SystemConfig // 312 bytes
 {
@@ -85,7 +79,7 @@ struct SystemConfig // 312 bytes
 
 
 // https://www.arduino.cc/en/Reference/EEPROMPut
-struct TickerConfig  // aprox 480 bytes in size using sizeof
+struct TickerConfig  // aprox 900 bytes in size using sizeof
 {
   char owner_name[64];   
 
@@ -167,6 +161,14 @@ struct CustomMessage
     time_t message_last_displayed;    
 
 };
+
+
+// For EEPROM address writing, memory position, do not change!!
+static const int eeprom_addr_SystemConfig = 0; // so the settings don't get blown away by AutoConnect
+static const int eeprom_addr_TickerConfig = 512; 
+static const int eeprom_addr_AutoConnectConfig = eeprom_addr_TickerConfig + sizeof(TickerConfig) + 16; 
+
+
 
 
 #endif

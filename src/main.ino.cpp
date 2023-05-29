@@ -8,11 +8,14 @@
 
 #ifdef ARDUINO_ESP8266_WEMOS_D1MINI  
     #define DEVICE_MODEL "WMD1"
-    #pragma message "Compiling for production WeMos D1 R2 and mini board!"
+    //#pragma message "Compiling for production WeMos D1 R2 and mini board!"
     #define CS_PIN D8           // Slave Select
     #define RGB_LEDS_PIN D2     // WS2812B LED PIN
 #else
     #pragma message "UNSUPPORTED BOARD!!"
+
+    #define CS_PIN 8           // Slave Select
+    #define RGB_LEDS_PIN 2     // WS2812B LED PIN    
 #endif
 
 // Important Debug Class - Redirect Output for Development Purposes
@@ -34,11 +37,22 @@ bool lfs_OK = false;
 #include <Arduino.h>
 #include <Wire.h>
 #include <EEPROM.h>             // Library for handle teh EEPROM
-#include <ESP8266WiFi.h>        // ESP library for all WiFi functions
-#include <ESP8266WebServer.h>   // used in AP mode (config mode)
+
+
+#if defined(ESP8266)
+  #include <ESP8266WiFi.h>
+  #include <WiFiClient.h>
+  #include <ESP8266WebServer.h>
+#elif defined(ESP32)
+  #include <WiFi.h>
+  #include <WiFiClient.h>
+  #include <WebServer.h>
+#endif
+
+//#include <ElegantOTA.h>
 #include <AutoConnect.h>
-#include <ESP8266httpUpdate.h>  // For HTTP based remote firmware update
-#include <ESP8266HTTPClient.h>  // For proxy connections instead of using WiFiclient directly
+//#include <ESP8266httpUpdate.h>  // For HTTP based remote firmware update
+//#include <ESP8266HTTPClient.h>  // For proxy connections instead of using WiFiclient directly
 #include <TimeLib2.hpp>            // For Time Management //http://www.arduino.cc/playground/Code/Time - https://github.com/PaulStoffregen/Time - Known issue with ESP8266 -> http://forum.arduino.cc/index.php?topic=96891.30
 
 TimeLib2  clockMain;
@@ -91,7 +105,11 @@ String    clock3TimezoneName;
 
 
 /*---------------------------- Class Instances -------------------------------*/
-ESP8266WebServer    webServer(80);
+#if defined(ESP8266)
+  ESP8266WebServer    webServer(80);
+#else
+  WebServer    webServer(80);  
+#endif  
 AutoConnect         Portal(webServer);
 AutoConnectConfig   PortalConfig;
 WiFiClient          client;
@@ -262,7 +280,7 @@ void setup()
 { 
   delay(200);
   // Setup the Serial
-  Serial.begin(115200, SERIAL_8N1); // The default is 8 data bits, no parity, one stop bit. 
+  Serial.begin(115200); //, SERIAL_8N1); // The default is 8 data bits, no parity, one stop bit. 
 
   // Setup Parola
   displayActivate();
@@ -300,19 +318,63 @@ void setup()
     Serial.println(F("************* FILESYSTEM ERROR ***************"));
   }
 
+
   /*-------------------- START THE NETWORKING --------------------*/
+
+/*
+
+
+  WiFi.begin("XXXXXXXXXX", "XXXXXXXXXX");
+  int retries = 0;
+  while ((WiFi.status() != WL_CONNECTED) && (retries < 15)) {
+    retries++;
+    delay(500);
+    Serial.print(".");
+  }
+  if (retries > 14) {
+      Serial.println(F("WiFi connection FAILED"));
+  }
+  if (WiFi.status() == WL_CONNECTED) {
+      Serial.println(F("WiFi connected!"));
+      Serial.println("IP address: ");
+      Serial.println(WiFi.localIP());
+  }
+  Serial.println(F("Setup ready"));
+
+
+
+*/  
+
+/*
+  unsigned long start_wifi_wait = millis();
+  WiFi.begin();
+
+  while ((millis() - start_wifi_wait) < 15000 )
+  {
+          if (WiFi.status() != WL_CONNECTED) { 
+            delay(10);
+          }     
+          else
+          {
+            break;
+          }
+  }
+
+*/
   Sprintln(F(" * Starting WiFi Connection Manager"));
 
   PortalConfig.apid = "RetroTicker";
   PortalConfig.title = "Configure WiFi";
   PortalConfig.menuItems = AC_MENUITEM_CONFIGNEW;
-
+  PortalConfig.autoReconnect = true;
+  //PortalConfig.beginTimeout= 10000;
+  PortalConfig.boundaryOffset = eeprom_addr_AutoConnectConfig;
   Portal.config(PortalConfig);
 
-  // Starts user web site included the AutoConnect portal.
+ // Starts user web site included the AutoConnect portal.
   Portal.onDetect(atDetect);
   if (Portal.begin()) {
-    //Serial.println("Started, IP:" + WiFi.localIP().toString());
+    Serial.println("Started, IP:" + WiFi.localIP().toString());
   }
   else {
     
@@ -323,6 +385,13 @@ void setup()
       #endif         
       } // Wait.
   }
+
+
+  // Establish a connection with an autoReconnect option.
+  if (Portal.begin()) {
+    Serial.println("WiFi connected: " + WiFi.localIP().toString());
+  }
+  Sprintln(F(" * Got past Portal.begin()"));
 
   // Got here after using the portal. Lets flush memory by resetting.
   if (first_setup) {
@@ -360,6 +429,7 @@ void setup()
       webServer.send(404, "text/plain", "404: Not Found"); // otherwise, respond with a 404 (Not Found) error
   });
 
+  //ElegantOTA.begin(&webServer);    // Start ElegantOTA
   webServer.begin();
 
   Sprintln(F(" * Getting Time From Internet Endpoint "));
@@ -1293,7 +1363,7 @@ bool get_json_and_parse_v3(JsonProcessor &parser, const String& action_str, cons
     String url = "http://" + String(global_endpoint_host) +  String(global_endpoint_path) + "?action=" + action_str + "&did=" + String(systemConfig.device_id) + "&" + params_str;
     Sprint(F("> Getting JSON data from URL: ")); Sprintln(url);
 
-    http.setUserAgent("RetroTicker/2.0 (ESP8266 " DEVICE_MODEL ")"); 
+    http.setUserAgent("RetroTicker/2.0 (ESP)"); 
     http.setTimeout(8000);
     http.begin(client, url);
     http.useHTTP10(true);        
@@ -1305,7 +1375,7 @@ bool get_json_and_parse_v3(JsonProcessor &parser, const String& action_str, cons
       Stream& response = http.getStream();
 
       // Allocate the JsonDocument in the heap
-      DynamicJsonDocument doc(10000);
+      DynamicJsonDocument doc(8000);
 
       // Deserialize the JSON document in the response
       deserializeJson(doc, response);
